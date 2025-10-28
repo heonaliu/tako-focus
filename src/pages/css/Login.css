@@ -1,0 +1,33 @@
+.login-container {
+  min-height: 78vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.login-box {
+  text-align: center;
+}
+
+.login-box img {
+  width: 160px;
+}
+
+.login-box h1 {
+  font-size: 36px;
+  margin: 12px 0;
+}
+
+.login-box p {
+  color: var(--muted);
+}
+
+.login-box h1,
+.login-box p {
+  text-decoration: none;
+}
+
+
+.login-box .btn-wrapper {
+  margin-top: 20px;
+}

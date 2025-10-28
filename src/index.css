@@ -27,6 +27,7 @@ body{
   border-radius: 12px;
   font-weight: 600;
   cursor: pointer;
+  text-decoration: none;
 }
 .btn.secondary {
   background: transparent;
