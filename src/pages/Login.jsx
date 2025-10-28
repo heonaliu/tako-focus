@@ -1,6 +1,7 @@
 import React from 'react'
 import { supabase } from '../supabaseClient'
 import './css/Login.css'
+import takoWave from '../assets/tako_wave.png'
 
 export default function Login() {
   async function signInWithGoogle() {
@@ -11,7 +12,7 @@ export default function Login() {
   return (
     <div className="login-container">
       <div className="login-box">
-        <img src="/assets/tako_idle.png" alt="Tako" />
+        <img src={takoWave} alt="Tako" />
         <h1>Welcome to TakoFocus</h1>
         <p>Sign in with Google to save your sessions and tasks.</p>
         <div className="btn-wrapper">

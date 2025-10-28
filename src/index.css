@@ -28,17 +28,22 @@ body{
   font-weight: 600;
   cursor: pointer;
   text-decoration: none;
-  transition: background-color 2s, transform 0.2s;
+  transition: background-color 0.5s, transform 0.5s;
 }
 
 .btn:hover {
-  background: var(--purple-light);
+  background: var(--accent);
   transform: translateY(-2px);
 }
 .btn.secondary {
   background: transparent;
   border: 1px solid rgba(0,0,0,0.08);
-  color: var(--text);
+  color: white;
+}
+
+.btn-login {
+  color: white !important;
+  background: var(--purple-light);
 }
 
 /* basic card */
