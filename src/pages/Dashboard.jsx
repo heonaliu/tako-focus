@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from 'react'
 import { supabase } from '../supabaseClient'
+import './css/Dashboard.css'
 
-export default function Dashboard({ user }){
+export default function Dashboard({ user }) {
   const [sessions, setSessions] = useState([])
   const [totalMinutes, setTotalMinutes] = useState(0)
 
-  useEffect(()=> {
+  useEffect(() => {
     if (!user) return
     async function load() {
       const { data } = await supabase
@@ -21,24 +22,24 @@ export default function Dashboard({ user }){
   }, [user])
 
   return (
-    <div className="container">
-      <h2 style={{marginBottom:8}}>Dashboard</h2>
-      <div className="grid-2">
-        <div>
-          <div className="card" style={{marginBottom:20}}>
+    <div className="dashboard-container">
+      <h2 className="dashboard-title">Dashboard</h2>
+      <div className="dashboard-grid">
+        <div className="dashboard-left">
+          <div className="card total-focus-card">
             <h3>Total Focus Time</h3>
-            <p style={{fontSize:28, fontWeight:700}}>{totalMinutes} minutes</p>
-            <p style={{color:'var(--muted)'}}>{sessions.length} sessions completed</p>
+            <p className="total-minutes">{totalMinutes} minutes</p>
+            <p className="session-count">{sessions.length} sessions completed</p>
           </div>
 
-          <div className="card">
+          <div className="card recent-sessions-card">
             <h3>Recent Sessions</h3>
-            <ul>
-              {sessions.slice(0,6).map(s => (
-                <li key={s.id} style={{padding:'8px 0', borderBottom:'1px solid #f0f0f0'}}>
-                  <div style={{display:'flex', justifyContent:'space-between'}}>
+            <ul className="session-list">
+              {sessions.slice(0, 6).map(s => (
+                <li key={s.id} className="session-item">
+                  <div className="session-row">
                     <div>{s.task_id ? `Task: ${s.task_id}` : 'General focus'}</div>
-                    <div style={{color:'var(--muted)'}}>{s.duration_minutes} min</div>
+                    <div className="session-duration">{s.duration_minutes} min</div>
                   </div>
                 </li>
               ))}
@@ -46,11 +47,11 @@ export default function Dashboard({ user }){
           </div>
         </div>
 
-        <div>
-          <div className="card" style={{textAlign:'center'}}>
-            <img src="/assets/tako_proud.png" alt="tako" style={{width:220}}/>
-            <h3 style={{marginTop:10}}>Keep it up!</h3>
-            <p style={{color:'var(--muted)'}}>Complete sessions to grow your streak.</p>
+        <div className="dashboard-right">
+          <div className="card encouragement-card">
+            <img src="/assets/tako_proud.png" alt="tako" className="encouragement-img" />
+            <h3>Keep it up!</h3>
+            <p className="encouragement-text">Complete sessions to grow your streak.</p>
           </div>
         </div>
       </div>

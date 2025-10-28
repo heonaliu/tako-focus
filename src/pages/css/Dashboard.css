@@ -1,0 +1,71 @@
+.dashboard-container {
+  max-width: 1100px;
+  margin: 34px auto;
+  padding: 0 20px;
+}
+
+.dashboard-title {
+  margin-bottom: 8px;
+}
+
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: 1fr 420px;
+  gap: 28px;
+  align-items: start;
+}
+
+@media (max-width: 900px) {
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.total-focus-card {
+  margin-bottom: 20px;
+}
+
+.total-minutes {
+  font-size: 28px;
+  font-weight: 700;
+}
+
+.session-count {
+  color: var(--muted);
+}
+
+.recent-sessions-card ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.session-item {
+  padding: 8px 0;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.session-row {
+  display: flex;
+  justify-content: space-between;
+}
+
+.session-duration {
+  color: var(--muted);
+}
+
+.encouragement-card {
+  text-align: center;
+}
+
+.encouragement-img {
+  width: 220px;
+}
+
+.encouragement-text {
+  color: var(--muted);
+  margin-top: 0;
+}
+.start-session-btn {
+  margin-top: 12px;
+}
