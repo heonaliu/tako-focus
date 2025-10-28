@@ -1,35 +1,48 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import React, { useEffect, useState } from 'react'
+import { Routes, Route, useNavigate } from 'react-router-dom'
+import { supabase } from './supabaseClient'
+import Navbar from './components/Navbar'
+import Login from './pages/Login'
+import Dashboard from './pages/Dashboard'
+import FocusSession from './pages/FocusSession'
+import Tasks from './pages/Tasks'
+import About from './pages/About'
+import ProtectedRoute from './components/ProtectedRoute'
 
-function App() {
-  const [count, setCount] = useState(0)
+export default function App(){
+  const [user, setUser] = useState(null)
+  const navigate = useNavigate()
+
+  useEffect(()=>{
+    //const session = supabase.auth.getSession().then(r => r.data.session)
+    // supabase v2: event listener
+    const { data: listener } = supabase.auth.onAuthStateChange((event, session) => {
+      setUser(session?.user ?? null)
+      if (session?.user) navigate('/dashboard')
+    })
+    // check initial
+    supabase.auth.getSession().then(r => {
+      setUser(r.data.session?.user ?? null)
+    })
+    return () => listener?.subscription.unsubscribe()
+  }, [navigate])
 
   return (
     <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
+      <Navbar user={user}/>
+      <Routes>
+        <Route path="/" element={<Login />} />
+        <Route path="/about" element={<About />} />
+        <Route path="/dashboard" element={
+          <ProtectedRoute user={user}><Dashboard user={user} /></ProtectedRoute>
+        } />
+        <Route path="/focus" element={
+          <ProtectedRoute user={user}><FocusSession user={user} /></ProtectedRoute>
+        } />
+        <Route path="/tasks" element={
+          <ProtectedRoute user={user}><Tasks user={user} /></ProtectedRoute>
+        } />
+      </Routes>
     </>
   )
 }
-
-export default App
