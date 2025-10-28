@@ -1,0 +1,46 @@
+.navbar {
+  padding: 12px 22px;
+  border-bottom: 1px solid rgba(0,0,0,0.03);
+}
+
+.navbar .container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.navbar .logo-section {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.navbar .logo-section img {
+  width: 42px;
+  height: 42px;
+}
+
+.navbar .logo-section a {
+  font-weight: 700;
+  color: var(--purple-main);
+  text-decoration: none;
+}
+
+.navbar .links {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.navbar .links a {
+  text-decoration: none;
+  color: var(--muted);
+}
+
+.navbar .links .btn {
+    text-decoration: none;
+    /* keep your button styles here or in your global btn class */
+}
+.navbar .links .btn:hover {
+  opacity: 0.9;
+}
