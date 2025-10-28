@@ -57,7 +57,7 @@ export default function FocusSession({ user }) {
               </select>
             </div>
 
-            <Timer initialMinutes={duration} onComplete={handleComplete} />
+            <Timer initialMinutes={duration} onComplete={handleComplete} className="timer-display"/>
           </div>
         </div>
 

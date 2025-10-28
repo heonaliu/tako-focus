@@ -32,18 +32,19 @@ body{
 }
 
 .btn:hover {
-  background: var(--accent);
+  background: var(--purple-light);
   transform: translateY(-2px);
 }
 .btn.secondary {
   background: transparent;
   border: 1px solid rgba(0,0,0,0.08);
-  color: white;
+  color: var(--text);
 }
+
 
 .btn-login {
   color: white !important;
-  background: var(--purple-light);
+  background: var(--purple-main);
 }
 
 /* basic card */

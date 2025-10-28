@@ -11,6 +11,10 @@
   align-items: start;
 }
 
+.timer-display {
+    color:--var(--accent)
+}
+
 @media (max-width: 900px) {
   .focus-grid {
     grid-template-columns: 1fr;

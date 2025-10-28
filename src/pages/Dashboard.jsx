@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { supabase } from '../supabaseClient'
 import './css/Dashboard.css'
+import takoProud from '../assets/tako_proud.png'
 
 export default function Dashboard({ user }) {
   const [sessions, setSessions] = useState([])
@@ -49,7 +50,7 @@ export default function Dashboard({ user }) {
 
         <div className="dashboard-right">
           <div className="card encouragement-card">
-            <img src="/assets/tako_proud.png" alt="tako" className="encouragement-img" />
+            <img src={takoProud} alt="tako" className="encouragement-img" />
             <h3>Keep it up!</h3>
             <p className="encouragement-text">Complete sessions to grow your streak.</p>
           </div>
