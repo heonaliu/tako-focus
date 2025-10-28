@@ -28,6 +28,12 @@ body{
   font-weight: 600;
   cursor: pointer;
   text-decoration: none;
+  transition: background-color 2s, transform 0.2s;
+}
+
+.btn:hover {
+  background: var(--purple-light);
+  transform: translateY(-2px);
 }
 .btn.secondary {
   background: transparent;
