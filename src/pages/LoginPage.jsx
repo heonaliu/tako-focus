@@ -1,122 +1,64 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { supabase } from "../supabaseClient";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
 export default function LoginPage() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [username, setUsername] = useState("");
-  const [isSignUp, setIsSignUp] = useState(false);
-  const [error, setError] = useState("");
-  const navigate = useNavigate();
   const { user } = useAuth();
+  const navigate = useNavigate();
+  const [error, setError] = useState("");
 
-  async function handleSubmit(e) {
-    e.preventDefault();
+  // Upsert profile safely after login
+  useEffect(() => {
+  if (user) navigate("/dashboard");
+}, [user, navigate]);
+
+
+  // Trigger Google OAuth login
+  const handleGoogleSignIn = async () => {
     setError("");
-
     try {
-      if (isSignUp) {
-        const { error } = await supabase.auth.signUp({
-          email,
-          password,
-          options: { data: { username } },
-        });
-        if (error) throw error;
-      } else {
-        const { error } = await supabase.auth.signInWithPassword({
-          email,
-          password,
-        });
-        if (error) throw error;
-      }
-      navigate("/dashboard");
-    } catch (err) {
-      setError(err.message);
-    }
-  }
-
-  async function handleGoogleSignIn() {
-    try {
-      const { error } = await supabase.auth.signInWithOAuth({ provider: "google" });
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: {
+          redirectTo: window.location.origin, // ensures redirect goes to your app
+        },
+      });
       if (error) throw error;
     } catch (err) {
-      setError(err.message);
+      console.error("Google sign-in error:", err.message);
+      setError("Error signing in with Google: " + err.message);
     }
-  }
-
-  if (user) {
-    navigate("/dashboard");
-    return null;
-  }
+  };
 
   return (
-    <div className="auth-container" style={{ minHeight: "calc(100vh - 60px)", display: "flex", justifyContent: "center", alignItems: "center" }}>
+    <div
+      className="auth-container"
+      style={{
+        minHeight: "100vh",
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+      }}
+    >
       <div className="auth-box">
-        <h2>{isSignUp ? "Create an Account" : "Welcome Back"}</h2>
+        <h2>Sign in with Google</h2>
 
-        <form onSubmit={handleSubmit}>
-          {isSignUp && (
-            <input
-              type="text"
-              placeholder="Username"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              required
-            />
-          )}
-          <input
-            type="email"
-            placeholder="Email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-          />
-          <input
-            type="password"
-            placeholder="Password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-          />
+        {error && <p className="error" style={{ color: "red" }}>{error}</p>}
 
-          {error && <p className="error">{error}</p>}
-
-          <button type="submit">{isSignUp ? "Sign Up" : "Log In"}</button>
-        </form>
-
-        <div className="divider">
-          <span>or</span>
-        </div>
-
-        <button onClick={handleGoogleSignIn} className="google-btn">
-          <div
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              justifyContent: "center",
-              width: "24px",
-              height: "24px",
-              borderRadius: "50%",
-              border: "1px solid #555",
-              marginRight: "8px",
-              fontSize: "14px",
-              fontWeight: "bold",
-              color: "#555",
-            }}
-          >
-            G
-          </div>
+        <button
+          onClick={handleGoogleSignIn}
+          style={{
+            padding: "10px 20px",
+            background: "#4285F4",
+            color: "white",
+            border: "none",
+            borderRadius: "5px",
+            cursor: "pointer",
+          }}
+        >
           Continue with Google
         </button>
-
-        <p className="switch-mode">
-          {isSignUp ? "Already have an account?" : "Need an account?"}{" "}
-          <span onClick={() => setIsSignUp(!isSignUp)}>
-            {isSignUp ? "Log in" : "Sign up"}
-          </span>
-        </p>
       </div>
     </div>
   );
