@@ -20,6 +20,10 @@
   font-family: 'Poppins', sans-serif;
 }
 
+.task-item, .tasks-container {
+  pointer-events: auto !important;
+}
+
 .task-actions {
   display: flex;
   gap: 8px;
