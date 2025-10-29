@@ -15,6 +15,7 @@ export default function Tasks({ user }) {
   const [showOverview, setShowOverview] = useState(false);
   const [editingTask, setEditingTask] = useState(null);
 
+  // ---- Load Tasks ----
   const loadTasks = useCallback(async () => {
     setLoading(true);
     try {
@@ -24,10 +25,11 @@ export default function Tasks({ user }) {
         .eq('user_id', user.id);
       if (error) throw error;
 
-      const tasksWithDates = (data || []).map(task => ({
-        ...task,
-        due: new Date(task.due_date)
-      }));
+      // Parse Supabase date as local (avoid UTC conversion)
+      const tasksWithDates = (data || []).map(task => {
+        const [year, month, day] = task.due_date.split('-').map(Number);
+        return { ...task, due: new Date(year, month - 1, day) };
+      });
 
       setTasks(tasksWithDates);
     } catch (err) {
@@ -43,6 +45,7 @@ export default function Tasks({ user }) {
     loadTasks();
   }, [user, loadTasks]);
 
+  // ---- CRUD Operations ----
   async function createTask() {
     if (!title.trim()) return;
     try {
@@ -57,7 +60,8 @@ export default function Tasks({ user }) {
         .select();
       if (error) throw error;
 
-      const newTask = { ...data[0], due: new Date(data[0].due_date) };
+      const [year, month, day] = data[0].due_date.split('-').map(Number);
+      const newTask = { ...data[0], due: new Date(year, month - 1, day) };
       setTasks([newTask, ...tasks]);
       setTitle('');
       setNotes('');
@@ -81,7 +85,8 @@ export default function Tasks({ user }) {
         .select();
       if (error) throw error;
 
-      const updatedTask = { ...data[0], due: new Date(data[0].due_date) };
+      const [year, month, day] = data[0].due_date.split('-').map(Number);
+      const updatedTask = { ...data[0], due: new Date(year, month - 1, day) };
       setTasks(tasks.map(t => (t.id === task.id ? updatedTask : t)));
       setEditingTask(null);
     } catch (err) {
@@ -108,7 +113,7 @@ export default function Tasks({ user }) {
     }
   }
 
-  // --- Overview: group tasks by week ---
+  // ---- Overview Grouping ----
   const weeks = {};
   tasks.forEach(task => {
     const taskDate = task.due;
@@ -125,7 +130,6 @@ export default function Tasks({ user }) {
   });
 
   const today = new Date();
-  const todayStr = today.toISOString().split('T')[0];
 
   const sortedWeekKeys = Object.keys(weeks).sort((a, b) => {
     const startA = new Date(a.split('_')[0]);
@@ -146,22 +150,28 @@ export default function Tasks({ user }) {
     weeks[weekKey].tasks.sort((a, b) => a.due - b.due);
   });
 
-  // --- Filtering logic ---
+  // ---- Filtering Logic ----
+  function isSameLocalDate(d1, d2) {
+    return (
+      d1.getFullYear() === d2.getFullYear() &&
+      d1.getMonth() === d2.getMonth() &&
+      d1.getDate() === d2.getDate()
+    );
+  }
+
   const activeTasks = showOverview
     ? [...tasks].sort((a, b) => a.due - b.due)
     : tasks
-        .filter(
-          task =>
-            !task.is_done && task.due.toISOString().split('T')[0] === todayStr
-        )
+        .filter(task => !task.is_done && isSameLocalDate(task.due, today))
         .sort((a, b) => a.due - b.due);
 
-  const completedTasks = !showOverview
-    ? tasks
-        .filter(task => task.is_done)
-        .sort((a, b) => b.due - a.due)
-    : [];
+const completedTasks = !showOverview
+  ? tasks
+      .filter(task => task.is_done && isSameLocalDate(task.due, today))
+      .sort((a, b) => b.due - a.due)
+  : [];
 
+  // ---- UI ----
   if (loading) return <div className="container"><p>Loading tasks...</p></div>;
   if (error) return <div className="container"><p className="error-text">{error}</p></div>;
 
@@ -278,7 +288,7 @@ export default function Tasks({ user }) {
   );
 }
 
-// TaskItem Card
+// ---- TaskItem ----
 function TaskItem({ task, editingTask, setEditingTask, updateTask, toggleDone, deleteTask }) {
   const [subtasks, setSubtasks] = useState([]);
   const [newSubtaskTitle, setNewSubtaskTitle] = useState('');
