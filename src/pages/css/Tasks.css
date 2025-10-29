@@ -1,5 +1,5 @@
 .tasks-container {
-  max-width: 800px;
+  max-width: 900px;
   margin: 30px auto;
   padding: 0 20px;
 }
@@ -9,13 +9,14 @@
 }
 
 .task-input,
-.task-notes {
+.task-notes,
+.task-date {
   width: 100%;
   padding: 10px;
   margin-bottom: 8px;
   border-radius: 12px;
   border: 1px solid #ccc;
-  resize: none; /* prevents resizing */
+  resize: none;
   font-family: 'Poppins', sans-serif;
 }
 
@@ -41,14 +42,30 @@
   color: var(--muted);
 }
 
-.task-notes-preview {
+.task-notes-preview, .task-date-preview {
   color: var(--muted);
   font-size: 13px;
 }
 
 .task-buttons {
   display: flex;
-  gap: 8px;
+  gap: 6px;
+}
+
+.icon-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #333;
+  font-size: 16px;
+}
+
+.icon-btn:hover {
+  color: #007BFF;
+}
+
+.week-group {
+  margin-top: 20px;
 }
 
 .no-tasks {
@@ -56,5 +73,5 @@
 }
 
 .error-text {
-  color: rgb(255, 111, 111);
+  color: red;
 }
