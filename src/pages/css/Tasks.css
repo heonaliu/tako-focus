@@ -1,52 +1,29 @@
 .tasks-container {
-  max-width: 1100px;
-  margin: 34px auto;
+  max-width: 800px;
+  margin: 30px auto;
   padding: 0 20px;
 }
 
-/* New Task Card */
-.new-task-card {
+.new-task-card, .task-list-card {
   margin-bottom: 20px;
 }
 
-/* Rounded input + textarea */
 .task-input,
 .task-notes {
   width: 100%;
-  padding: 10px 12px;
+  padding: 10px;
   margin-bottom: 8px;
-  border: 1px solid #e0e0e0;
-  border-radius: 10px;
-  font-size: 15px;
-  font-family: 'Poppins', system-ui;
-  resize: none; /* disable resizing */
-  outline: none;
-  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+  border-radius: 12px;
+  border: 1px solid #ccc;
+  resize: none; /* prevents resizing */
+  font-family: 'Poppins', sans-serif;
 }
 
-.task-input:focus,
-.task-notes:focus {
-  border-color: var(--purple-main);
-  box-shadow: 0 0 0 3px rgba(155, 93, 229, 0.15);
-}
-
-/* Create Button Container */
 .task-actions {
   display: flex;
   gap: 8px;
 }
 
-/* Task List Card */
-.task-list-card {
-  padding-bottom: 10px;
-}
-
-/* No Tasks Message */
-.no-tasks {
-  color: var(--muted);
-}
-
-/* Task Item */
 .task-item {
   display: flex;
   align-items: center;
@@ -59,8 +36,9 @@
   flex: 1;
 }
 
-.task-title {
-  font-weight: 600;
+.task-title.done {
+  text-decoration: line-through;
+  color: var(--muted);
 }
 
 .task-notes-preview {
@@ -68,8 +46,15 @@
   font-size: 13px;
 }
 
-/* Button Group */
 .task-buttons {
   display: flex;
   gap: 8px;
+}
+
+.no-tasks {
+  color: var(--muted);
+}
+
+.error-text {
+  color: red;
 }
