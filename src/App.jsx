@@ -1,9 +1,10 @@
 import React from "react";
-import { Routes, Route, Navigate } from "react-router-dom";
+import { Routes, Route } from "react-router-dom";
 import { useAuth } from "./context/AuthContext";
 
 import Navbar from "./components/Navbar";
-import LoginPage from "./pages/LoginPage";
+import LoginPage from "./pages/LoginPage"; // Email/password login/signup page
+import Login from "./pages/Login"; // Welcome page with Tako image
 import Dashboard from "./pages/Dashboard";
 import FocusSession from "./pages/FocusSession";
 import Tasks from "./pages/Tasks";
@@ -11,20 +12,22 @@ import About from "./pages/About";
 import ProtectedRoute from "./components/ProtectedRoute";
 
 export default function App() {
-  const { user } = useAuth(); // 👈 use the AuthProvider context
+  const { user } = useAuth();
 
   return (
     <>
-      {/* Only show Navbar if logged in */}
-      {user && <Navbar user={user} />}
+      {/* Navbar always visible */}
+      <Navbar user={user} />
 
       <Routes>
-        {/* Public routes */}
-        <Route
-          path="/"
-          element={!user ? <LoginPage /> : <Navigate to="/dashboard" />}
-        />
+        {/* Homepage */}
+        <Route path="/" element={user ? <Dashboard user={user} /> : <Login />} />
+
+        {/* Public route */}
         <Route path="/about" element={<About />} />
+
+        {/* Login/signup page */}
+        <Route path="/login" element={<LoginPage />} />
 
         {/* Protected routes */}
         <Route

@@ -39,9 +39,7 @@ export default function LoginPage() {
 
   async function handleGoogleSignIn() {
     try {
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: "google",
-      });
+      const { error } = await supabase.auth.signInWithOAuth({ provider: "google" });
       if (error) throw error;
     } catch (err) {
       setError(err.message);
@@ -54,7 +52,7 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="auth-container">
+    <div className="auth-container" style={{ minHeight: "calc(100vh - 60px)", display: "flex", justifyContent: "center", alignItems: "center" }}>
       <div className="auth-box">
         <h2>{isSignUp ? "Create an Account" : "Welcome Back"}</h2>
 
@@ -85,18 +83,14 @@ export default function LoginPage() {
 
           {error && <p className="error">{error}</p>}
 
-          <button type="submit">
-            {isSignUp ? "Sign Up" : "Log In"}
-          </button>
+          <button type="submit">{isSignUp ? "Sign Up" : "Log In"}</button>
         </form>
 
-        {/* Google login button */}
         <div className="divider">
           <span>or</span>
         </div>
 
         <button onClick={handleGoogleSignIn} className="google-btn">
-          {/* Minimal circle G icon */}
           <div
             style={{
               display: "inline-flex",
@@ -105,11 +99,11 @@ export default function LoginPage() {
               width: "24px",
               height: "24px",
               borderRadius: "50%",
-              border: "1px solid white",
+              border: "1px solid #555",
               marginRight: "8px",
               fontSize: "14px",
               fontWeight: "bold",
-              color: "white",
+              color: "#555",
             }}
           >
             G

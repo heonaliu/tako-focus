@@ -1,15 +1,15 @@
-import React from 'react'
-import { Link, useNavigate } from 'react-router-dom'
-import { supabase } from '../supabaseClient'
-import './css/Navbar.css'
-import takoIdle from '../assets/tako_idle.png'
+import React from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { supabase } from "../supabaseClient";
+import "./css/Navbar.css";
+import takoIdle from "../assets/tako_idle.png";
 
 export default function Navbar({ user }) {
-  const navigate = useNavigate()
+  const navigate = useNavigate();
 
   async function signOut() {
-    await supabase.auth.signOut()
-    navigate('/')
+    await supabase.auth.signOut();
+    navigate("/");
   }
 
   return (
@@ -17,7 +17,8 @@ export default function Navbar({ user }) {
       <div className="container">
         <div className="logo-section">
           <img src={takoIdle} alt="Tako" />
-          <Link to="/dashboard">Dashboard</Link>
+          {/* Show "Home" if not logged in, "Dashboard" if logged in */}
+          <Link to={user ? "/dashboard" : "/"}>{user ? "Dashboard" : "Home"}</Link>
         </div>
         <div className="links">
           <Link to="/about">About</Link>
@@ -25,13 +26,18 @@ export default function Navbar({ user }) {
             <>
               <Link to="/tasks">Tasks</Link>
               <Link to="/focus">Focus</Link>
-              <button className="btn" onClick={signOut}>Sign out</button>
+              <button className="btn" onClick={signOut}>
+                Sign out
+              </button>
             </>
           ) : (
-            <Link to="/" className="btn btn-login">Sign Up</Link>
+            // Send user to email/password login/signup page
+            <Link to="/login" className="btn btn-login">
+              Sign Up
+            </Link>
           )}
         </div>
       </div>
     </nav>
-  )
+  );
 }
