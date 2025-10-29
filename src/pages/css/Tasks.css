@@ -1,3 +1,12 @@
+:root{
+  --bg: #F8F6FF;
+  --purple-main: #9B5DE5;
+  --purple-light: #C77DFF;
+  --accent: #FEC7D7;
+  --text: #2B2B2B;
+  --muted: #6B6B6B;
+}
+
 .tasks-container {
   max-width: 900px;
   margin: 30px auto;
@@ -71,7 +80,7 @@
 }
 
 .icon-btn:hover {
-  color: #007BFF;
+  color: var(--purple-light);
 }
 
 .week-group {
@@ -130,14 +139,14 @@
   font-size: 0.8rem;
   border: none;
   border-radius: 6px;
-  background-color: #007BFF;
+  background-color: var(--purple-main);
   color: white;
   cursor: pointer;
-  transition: background 0.2s;
+  transition: background 0.5s;
 }
 
 .small-btn:hover {
-  background-color: #0056b3;
+  background-color: var(--purple-light);
 }
 
 .subtask-loading {
@@ -150,4 +159,54 @@
   color: #aaa;
   font-size: 13px;
   font-style: italic;
+}
+
+
+/* === SUBTASKS EDIT MODE === */
+
+.subtasks-container h4 {
+  margin-bottom: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  color: #333;
+}
+
+.subtask-item.edit-mode {
+  background: #fafafa;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 6px 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+  transition: background 0.2s, box-shadow 0.2s;
+}
+
+.subtask-item.edit-mode:hover {
+  background: var(--bg);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.subtask-edit-input {
+  flex: 1;
+  padding: 6px 8px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 14px;
+  font-family: 'Poppins', sans-serif;
+}
+
+.subtask-edit-input:focus {
+  border-color: var(--purple-main);
+  outline: none;
+  box-shadow: 0 0 0 2px var(--purple-main);
+}
+
+.subtasks-container.editing {
+  background: #fff;
+  padding: 10px 12px;
+  border-radius: 10px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+  margin-top: 10px;
 }

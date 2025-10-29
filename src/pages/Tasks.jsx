@@ -294,6 +294,7 @@ function TaskItem({ task, editingTask, setEditingTask, updateTask, toggleDone, d
   const [newSubtaskTitle, setNewSubtaskTitle] = useState('');
   const [loadingSubs, setLoadingSubs] = useState(true);
 
+  // Load subtasks
   useEffect(() => {
     const loadSubtasks = async () => {
       setLoadingSubs(true);
@@ -308,6 +309,7 @@ function TaskItem({ task, editingTask, setEditingTask, updateTask, toggleDone, d
     loadSubtasks();
   }, [task.id]);
 
+  // Add subtask
   const addSubtask = async () => {
     if (!newSubtaskTitle.trim()) return;
     const { data, error } = await supabase
@@ -323,20 +325,33 @@ function TaskItem({ task, editingTask, setEditingTask, updateTask, toggleDone, d
     }
   };
 
+  // Toggle subtask done
   const toggleSubtaskDone = async (id, done) => {
     await supabase.from('subtasks').update({ is_done: !done }).eq('id', id);
     setSubtasks(subtasks.map(st => (st.id === id ? { ...st, is_done: !done } : st)));
   };
 
+  // Delete subtask
   const deleteSubtask = async (id) => {
     await supabase.from('subtasks').delete().eq('id', id);
     setSubtasks(subtasks.filter(st => st.id !== id));
   };
 
+  // Edit subtask title
+  const updateSubtaskTitle = async (id, newTitle) => {
+    const { error } = await supabase
+      .from('subtasks')
+      .update({ title: newTitle })
+      .eq('id', id);
+    if (!error) {
+      setSubtasks(subtasks.map(st => (st.id === id ? { ...st, title: newTitle } : st)));
+    }
+  };
+
   const isEditing = editingTask?.id === task.id;
 
   return (
-    <div className={`task-item card ${task.is_done ? 'done-task' : ''}`}>
+    <div className="task-item card">
       {isEditing ? (
         <>
           <input
@@ -349,9 +364,6 @@ function TaskItem({ task, editingTask, setEditingTask, updateTask, toggleDone, d
             value={editingTask.notes}
             onChange={e => setEditingTask({ ...editingTask, notes: e.target.value })}
           />
-          <button type="button" className="btn small-btn" onClick={addSubtask}>
-            + Add Subtask
-          </button>
           <input
             type="date"
             className="task-date"
@@ -364,11 +376,61 @@ function TaskItem({ task, editingTask, setEditingTask, updateTask, toggleDone, d
               })
             }
           />
+
+          {/* Subtasks Editing Section */}
+          <div className="subtasks-container">
+            <h4>Subtasks</h4>
+            {loadingSubs ? (
+              <div className="subtask-loading">Loading subtasks...</div>
+            ) : subtasks.length === 0 ? (
+              <div className="subtask-empty">No subtasks</div>
+            ) : (
+              subtasks.map(st => (
+                <div key={st.id} className="subtask-item edit-mode">
+                  <input
+                    type="checkbox"
+                    checked={st.is_done}
+                    onChange={() => toggleSubtaskDone(st.id, st.is_done)}
+                  />
+                  <input
+                    type="text"
+                    className="subtask-edit-input"
+                    value={st.title}
+                    onChange={e => updateSubtaskTitle(st.id, e.target.value)}
+                  />
+                  <button
+                    className="icon-btn small"
+                    onClick={() => deleteSubtask(st.id)}
+                  >
+                    <FontAwesomeIcon icon={faTrash} />
+                  </button>
+                </div>
+              ))
+            )}
+
+            {/* Add new subtask */}
+            <div className="add-subtask">
+              <input
+                type="text"
+                placeholder="New subtask..."
+                value={newSubtaskTitle}
+                onChange={e => setNewSubtaskTitle(e.target.value)}
+              />
+              <button className="btn small-btn" onClick={addSubtask}>
+                Add
+              </button>
+            </div>
+          </div>
+
           <div className="task-buttons">
             <button type="button" className="icon-btn" onClick={() => updateTask(editingTask)}>
               <FontAwesomeIcon icon={faCheck} title="Save" />
             </button>
-            <button type="button" className="icon-btn" onClick={() => setEditingTask(null)}>
+            <button
+              type="button"
+              className="icon-btn"
+              onClick={() => setEditingTask(null)}
+            >
               Cancel
             </button>
           </div>
@@ -387,6 +449,7 @@ function TaskItem({ task, editingTask, setEditingTask, updateTask, toggleDone, d
             </div>
           </div>
 
+          {/* Subtasks List */}
           <div className="subtasks-container">
             {loadingSubs ? (
               <div className="subtask-loading">Loading subtasks...</div>
@@ -407,18 +470,6 @@ function TaskItem({ task, editingTask, setEditingTask, updateTask, toggleDone, d
                 </div>
               ))
             )}
-
-            <div className="add-subtask">
-              <input
-                type="text"
-                placeholder="New subtask..."
-                value={newSubtaskTitle}
-                onChange={e => setNewSubtaskTitle(e.target.value)}
-              />
-              <button className="btn small-btn" onClick={addSubtask}>
-                Add
-              </button>
-            </div>
           </div>
 
           <div className="task-buttons">
