@@ -28,7 +28,7 @@ export default function Navbar({ user }) {
               <button className="btn" onClick={signOut}>Sign out</button>
             </>
           ) : (
-            <Link to="/" className="btn btn-login">Log in</Link>
+            <Link to="/" className="btn btn-login">Sign Up</Link>
           )}
         </div>
       </div>
