@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { supabase } from '../supabaseClient';
 import './css/Tasks.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -15,28 +15,33 @@ export default function Tasks({ user }) {
   const [showOverview, setShowOverview] = useState(false);
   const [editingTask, setEditingTask] = useState(null);
 
-  useEffect(() => {
-    if (!user) return;
-    loadTasks();
-  }, [user]);
-
-  async function loadTasks() {
+  const loadTasks = useCallback(async () => {
     setLoading(true);
     try {
       const { data, error } = await supabase
         .from('tasks')
         .select('*')
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false });
+        .eq('user_id', user.id);
       if (error) throw error;
-      setTasks(data || []);
+
+      const tasksWithDates = (data || []).map(task => ({
+        ...task,
+        due: new Date(task.due_date)
+      }));
+
+      setTasks(tasksWithDates);
     } catch (err) {
       console.error(err.message);
       setError('Failed to load tasks.');
     } finally {
       setLoading(false);
     }
-  }
+  }, [user?.id]);
+
+  useEffect(() => {
+    if (!user) return;
+    loadTasks();
+  }, [user, loadTasks]);
 
   async function createTask() {
     if (!title.trim()) return;
@@ -52,7 +57,8 @@ export default function Tasks({ user }) {
         .select();
       if (error) throw error;
 
-      setTasks([data[0], ...tasks]);
+      const newTask = { ...data[0], due: new Date(data[0].due_date) };
+      setTasks([newTask, ...tasks]);
       setTitle('');
       setNotes('');
       setDate(new Date().toISOString().split('T')[0]);
@@ -75,7 +81,8 @@ export default function Tasks({ user }) {
         .select();
       if (error) throw error;
 
-      setTasks(tasks.map(t => (t.id === task.id ? data[0] : t)));
+      const updatedTask = { ...data[0], due: new Date(data[0].due_date) };
+      setTasks(tasks.map(t => (t.id === task.id ? updatedTask : t)));
       setEditingTask(null);
     } catch (err) {
       console.error('Failed to update task:', err.message);
@@ -86,7 +93,7 @@ export default function Tasks({ user }) {
   async function toggleDone(id, done) {
     try {
       await supabase.from('tasks').update({ is_done: !done }).eq('id', id);
-      setTasks(tasks.map(t => (t.id === id ? { ...t, is_done: !done } : t)));
+      setTasks(tasks.map(task => (task.id === id ? { ...task, is_done: !done } : task)));
     } catch (err) {
       console.error(err);
     }
@@ -95,24 +102,16 @@ export default function Tasks({ user }) {
   async function deleteTask(id) {
     try {
       await supabase.from('tasks').delete().eq('id', id);
-      setTasks(tasks.filter(t => t.id !== id));
+      setTasks(tasks.filter(task => task.id !== id));
     } catch (err) {
       console.error(err);
     }
   }
 
-  // Filter tasks by selected date
-  const filteredTasks = filterDate
-    ? tasks.filter(t => t.due_date === filterDate)
-    : tasks;
-
-  // --- Overview: Sort tasks by due_date descending first ---
-  const tasksSortedByDate = [...tasks].sort((a, b) => new Date(b.due_date) - new Date(a.due_date));
-
-  // Group tasks by week
+  // --- Overview: group tasks by week ---
   const weeks = {};
-  tasksSortedByDate.forEach(task => {
-    const taskDate = new Date(task.due_date);
+  tasks.forEach(task => {
+    const taskDate = task.due;
     const sunday = new Date(taskDate);
     sunday.setDate(taskDate.getDate() - taskDate.getDay());
     const saturday = new Date(sunday);
@@ -125,8 +124,29 @@ export default function Tasks({ user }) {
     weeks[weekKey].tasks.push(task);
   });
 
-  // Sort weeks descending
-  const sortedWeekKeys = Object.keys(weeks).sort((a, b) => new Date(b.split('_')[0]) - new Date(a.split('_')[0]));
+  const today = new Date();
+  const sortedWeekKeys = Object.keys(weeks).sort((a, b) => {
+    const startA = new Date(a.split('_')[0]);
+    const endA = new Date(a.split('_')[1]);
+    const startB = new Date(b.split('_')[0]);
+    const endB = new Date(b.split('_')[1]);
+
+    const aIsCurrent = startA <= today && today <= endA;
+    const bIsCurrent = startB <= today && today <= endB;
+
+    if (aIsCurrent) return -1;
+    if (bIsCurrent) return 1;
+
+    return startA - startB;
+  });
+
+  sortedWeekKeys.forEach(weekKey => {
+    weeks[weekKey].tasks.sort((a, b) => a.due - b.due);
+  });
+
+  const filteredTasks = filterDate
+    ? tasks.filter(task => task.due.toISOString().split('T')[0] === filterDate).sort((a, b) => a.due - b.due)
+    : [...tasks].sort((a, b) => a.due - b.due);
 
   if (loading) return <div className="container"><p>Loading tasks...</p></div>;
   if (error) return <div className="container"><p className="error-text">{error}</p></div>;
@@ -135,115 +155,82 @@ export default function Tasks({ user }) {
     <div className="tasks-container">
       <h2 className="tasks-header">
         Tasks
-        <button
-          type="button"
-          className="icon-btn"
-          onClick={() => setFilterDate(new Date().toISOString().split('T')[0])}
-        >
+        <button type="button" className="icon-btn" onClick={() => setFilterDate(new Date().toISOString().split('T')[0])}>
           <FontAwesomeIcon icon={faCalendarAlt} title="Today" />
         </button>
-        <button
-          type="button"
-          className="icon-btn"
-          onClick={() => setShowOverview(!showOverview)}
-        >
+        <button type="button" className="icon-btn" onClick={() => setShowOverview(!showOverview)}>
           <FontAwesomeIcon icon={faFilter} title="Overview" />
         </button>
       </h2>
 
       {/* New Task Card */}
       <div className="card new-task-card">
-        <input
-          className="task-input"
-          placeholder="Task title"
-          value={title}
-          onChange={e => setTitle(e.target.value)}
-        />
-        <textarea
-          className="task-notes"
-          placeholder="Notes (optional)"
-          value={notes}
-          onChange={e => setNotes(e.target.value)}
-        />
-        <input
-          type="date"
-          className="task-date"
-          value={date}
-          onChange={e => setDate(e.target.value)}
-        />
+        <input className="task-input" placeholder="Task title" value={title} onChange={e => setTitle(e.target.value)} />
+        <textarea className="task-notes" placeholder="Notes (optional)" value={notes} onChange={e => setNotes(e.target.value)} />
+        <input type="date" className="task-date" value={date} onChange={e => setDate(e.target.value)} />
         <div className="task-actions">
           <button type="button" className="btn" onClick={createTask}>Create</button>
         </div>
       </div>
 
-      {/* Tasks List / Overview */}
+      {/* Task List */}
       {showOverview ? (
         sortedWeekKeys.map(weekKey => (
           <div key={weekKey} className="week-group">
-            <h3>{weeks[weekKey].displayKey}</h3>
+            <h3 className={(function() {
+  const start = new Date(weekKey.split('_')[0]);
+  const end = new Date(weekKey.split('_')[1]);
+  return start <= today && today <= end ? 'current-week' : '';
+})()}>
+
+              {weeks[weekKey].displayKey}
+            </h3>
             {weeks[weekKey].tasks.map(task => (
-              <div key={task.id} className="card task-card">
-                <TaskItem
-                  task={task}
-                  editingTask={editingTask}
-                  setEditingTask={setEditingTask}
-                  updateTask={updateTask}
-                  toggleDone={toggleDone}
-                  deleteTask={deleteTask}
-                />
-              </div>
+              <TaskItem
+                key={task.id}
+                task={task}
+                editingTask={editingTask}
+                setEditingTask={setEditingTask}
+                updateTask={updateTask}
+                toggleDone={toggleDone}
+                deleteTask={deleteTask}
+              />
             ))}
           </div>
         ))
       ) : (
         filteredTasks.map(task => (
-          <div key={task.id} className="card task-card">
-            <TaskItem
-              task={task}
-              editingTask={editingTask}
-              setEditingTask={setEditingTask}
-              updateTask={updateTask}
-              toggleDone={toggleDone}
-              deleteTask={deleteTask}
-            />
-          </div>
+          <TaskItem
+            key={task.id}
+            task={task}
+            editingTask={editingTask}
+            setEditingTask={setEditingTask}
+            updateTask={updateTask}
+            toggleDone={toggleDone}
+            deleteTask={deleteTask}
+          />
         ))
       )}
     </div>
   );
 }
 
-// --- Individual Task Item ---
+// TaskItem Card
 function TaskItem({ task, editingTask, setEditingTask, updateTask, toggleDone, deleteTask }) {
   const isEditing = editingTask?.id === task.id;
 
   return (
-    <div className="task-item">
+    <div className="task-item card">
       {isEditing ? (
         <>
-          <input
-            className="task-input"
-            value={editingTask.title}
-            onChange={e => setEditingTask({ ...editingTask, title: e.target.value })}
-          />
-          <textarea
-            className="task-notes"
-            value={editingTask.notes}
-            onChange={e => setEditingTask({ ...editingTask, notes: e.target.value })}
-          />
-          <input
-            type="date"
-            className="task-date"
-            value={editingTask.due_date}
-            onChange={e => setEditingTask({ ...editingTask, due_date: e.target.value })}
-          />
+          <input className="task-input" value={editingTask.title} onChange={e => setEditingTask({ ...editingTask, title: e.target.value })} />
+          <textarea className="task-notes" value={editingTask.notes} onChange={e => setEditingTask({ ...editingTask, notes: e.target.value })} />
+          <input type="date" className="task-date" value={editingTask.due_date} onChange={e => setEditingTask({ ...editingTask, due_date: e.target.value, due: new Date(e.target.value) })} />
           <div className="task-buttons">
             <button type="button" className="icon-btn" onClick={() => updateTask(editingTask)}>
               <FontAwesomeIcon icon={faCheck} title="Save" />
             </button>
-            <button type="button" className="icon-btn" onClick={() => setEditingTask(null)}>
-              Cancel
-            </button>
+            <button type="button" className="icon-btn" onClick={() => setEditingTask(null)}>Cancel</button>
           </div>
         </>
       ) : (
@@ -251,13 +238,7 @@ function TaskItem({ task, editingTask, setEditingTask, updateTask, toggleDone, d
           <div className="task-details">
             <div className={`task-title ${task.is_done ? 'done' : ''}`}>{task.title}</div>
             <div className="task-notes-preview">{task.notes}</div>
-            <div className="task-date-preview">
-              {new Date(task.due_date).toLocaleDateString('en-US', {
-                year: 'numeric',
-                month: 'short',
-                day: 'numeric'
-              })}
-            </div>
+            <div className="task-date-preview">{task.due.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}</div>
           </div>
           <div className="task-buttons">
             <button type="button" className="icon-btn" onClick={() => toggleDone(task.id, task.is_done)}>
