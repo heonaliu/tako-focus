@@ -31,14 +31,19 @@
 
 .task-item {
   display: flex;
-  align-items: center;
+  flex-direction: column;
+  align-items: stretch;
   justify-content: space-between;
-  padding: 10px 0;
-  border-bottom: 1px solid #f1f1f1;
+  padding: 12px 16px;
+  margin-bottom: 10px;
+  border-radius: 10px;
+  background: #fff;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.08);
 }
 
 .task-details {
   flex: 1;
+  margin-bottom: 6px;
 }
 
 .task-title.done {
@@ -54,6 +59,7 @@
 .task-buttons {
   display: flex;
   gap: 6px;
+  margin-top: 6px;
 }
 
 .icon-btn {
@@ -78,4 +84,70 @@
 
 .error-text {
   color: red;
+}
+
+/* === SUBTASKS STYLING === */
+
+.subtasks-container {
+  margin-top: 10px;
+  padding-left: 15px;
+  border-left: 2px solid #e0e0e0;
+}
+
+.subtask-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 4px 0;
+  font-size: 14px;
+}
+
+.subtask-item input[type="checkbox"] {
+  cursor: pointer;
+}
+
+.subtask-item .done {
+  text-decoration: line-through;
+  color: gray;
+}
+
+.add-subtask {
+  display: flex;
+  gap: 8px;
+  margin-top: 6px;
+}
+
+.add-subtask input {
+  flex: 1;
+  padding: 6px 8px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  font-size: 14px;
+}
+
+.small-btn {
+  padding: 5px 10px;
+  font-size: 0.8rem;
+  border: none;
+  border-radius: 6px;
+  background-color: #007BFF;
+  color: white;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.small-btn:hover {
+  background-color: #0056b3;
+}
+
+.subtask-loading {
+  color: #888;
+  font-size: 13px;
+  margin-bottom: 4px;
+}
+
+.subtask-empty {
+  color: #aaa;
+  font-size: 13px;
+  font-style: italic;
 }
