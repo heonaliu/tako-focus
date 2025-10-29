@@ -104,18 +104,43 @@ export default function Tasks({ user }) {
   // Filter tasks by today unless overview mode
   const filteredTasks = showOverview ? tasks : tasks.filter(t => t.due_date === filterDate);
 
+
   // Group tasks by week (Sunday-Saturday)
-  const weeks = {};
-  filteredTasks.forEach(task => {
-    const taskDate = new Date(task.due_date);
-    const sunday = new Date(taskDate);
-    sunday.setDate(taskDate.getDate() - taskDate.getDay());
-    const saturday = new Date(sunday);
-    saturday.setDate(sunday.getDate() + 6);
-    const key = `${sunday.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} - ${saturday.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`;
-    if (!weeks[key]) weeks[key] = [];
-    weeks[key].push(task);
-  });
+// Group tasks by week (Sunday-Saturday) with year included
+const weeks = {};
+filteredTasks.forEach(task => {
+  const taskDate = new Date(task.due_date);
+
+  // Get Sunday of the week
+  const sunday = new Date(taskDate);
+  sunday.setDate(taskDate.getDate() - taskDate.getDay());
+
+  // Get Saturday of the week
+  const saturday = new Date(sunday);
+  saturday.setDate(sunday.getDate() + 6);
+
+  // Format as "Nov 24, 2025 - Nov 30, 2025"
+  const key = `${sunday.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })} - ${saturday.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`;
+
+  if (!weeks[key]) weeks[key] = [];
+  weeks[key].push(task);
+});
+
+// Sort weeks by the Sunday date (most recent first)
+const sortedWeekKeys = Object.keys(weeks).sort((a, b) => {
+  const parseSunday = str => {
+    // Take the first date in the string range, e.g., "Oct 26, 2025 - Nov 1, 2025"
+    return new Date(str.split(' - ')[0]);
+  };
+  return parseSunday(b) - parseSunday(a); // descending
+});
+
+
+// Sort tasks inside each week by due_date ascending
+sortedWeekKeys.forEach(week => {
+  weeks[week].sort((a, b) => new Date(a.due_date) - new Date(b.due_date));
+});
+
 
   if (loading) return <div className="container"><p>Loading tasks...</p></div>;
   if (error) return <div className="container"><p className="error-text">{error}</p></div>;
@@ -169,35 +194,36 @@ export default function Tasks({ user }) {
 
       {/* Tasks List */}
       {showOverview ? (
-        Object.keys(weeks).map(week => (
-          <div key={week} className="week-group">
-            <h3>{week}</h3>
-            {weeks[week].map(task => (
-              <TaskItem
-                key={task.id}
-                task={task}
-                editingTask={editingTask}
-                setEditingTask={setEditingTask}
-                updateTask={updateTask}
-                toggleDone={toggleDone}
-                deleteTask={deleteTask}
-              />
-            ))}
-          </div>
-        ))
-      ) : (
-        filteredTasks.map(task => (
-          <TaskItem
-            key={task.id}
-            task={task}
-            editingTask={editingTask}
-            setEditingTask={setEditingTask}
-            updateTask={updateTask}
-            toggleDone={toggleDone}
-            deleteTask={deleteTask}
-          />
-        ))
-      )}
+  sortedWeekKeys.map(week => (
+    <div key={week} className="week-group">
+      <h3>{week}</h3>
+      {weeks[week].map(task => (
+        <TaskItem
+          key={task.id}
+          task={task}
+          editingTask={editingTask}
+          setEditingTask={setEditingTask}
+          updateTask={updateTask}
+          toggleDone={toggleDone}
+          deleteTask={deleteTask}
+        />
+      ))}
+    </div>
+  ))
+) : (
+  filteredTasks.map(task => (
+    <TaskItem
+      key={task.id}
+      task={task}
+      editingTask={editingTask}
+      setEditingTask={setEditingTask}
+      updateTask={updateTask}
+      toggleDone={toggleDone}
+      deleteTask={deleteTask}
+    />
+  ))
+)}
+
     </div>
   );
 }
