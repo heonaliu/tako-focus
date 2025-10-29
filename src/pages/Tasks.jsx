@@ -11,7 +11,7 @@ export default function Tasks({ user }) {
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [filterDate, setFilterDate] = useState(new Date().toISOString().split('T')[0]); // Default today
+  const [filterDate, setFilterDate] = useState(new Date().toISOString().split('T')[0]);
   const [showOverview, setShowOverview] = useState(false);
   const [editingTask, setEditingTask] = useState(null);
 
@@ -101,46 +101,32 @@ export default function Tasks({ user }) {
     }
   }
 
-  // Filter tasks by today unless overview mode
-  const filteredTasks = showOverview ? tasks : tasks.filter(t => t.due_date === filterDate);
+  // Filter tasks by selected date
+  const filteredTasks = filterDate
+    ? tasks.filter(t => t.due_date === filterDate)
+    : tasks;
 
+  // --- Overview: Sort tasks by due_date descending first ---
+  const tasksSortedByDate = [...tasks].sort((a, b) => new Date(b.due_date) - new Date(a.due_date));
 
-  // Group tasks by week (Sunday-Saturday)
-// Group tasks by week (Sunday-Saturday) with year included
-const weeks = {};
-filteredTasks.forEach(task => {
-  const taskDate = new Date(task.due_date);
+  // Group tasks by week
+  const weeks = {};
+  tasksSortedByDate.forEach(task => {
+    const taskDate = new Date(task.due_date);
+    const sunday = new Date(taskDate);
+    sunday.setDate(taskDate.getDate() - taskDate.getDay());
+    const saturday = new Date(sunday);
+    saturday.setDate(sunday.getDate() + 6);
 
-  // Get Sunday of the week
-  const sunday = new Date(taskDate);
-  sunday.setDate(taskDate.getDate() - taskDate.getDay());
+    const weekKey = `${sunday.toISOString().split('T')[0]}_${saturday.toISOString().split('T')[0]}`;
+    const displayKey = `${sunday.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })} - ${saturday.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`;
 
-  // Get Saturday of the week
-  const saturday = new Date(sunday);
-  saturday.setDate(sunday.getDate() + 6);
+    if (!weeks[weekKey]) weeks[weekKey] = { displayKey, tasks: [] };
+    weeks[weekKey].tasks.push(task);
+  });
 
-  // Format as "Nov 24, 2025 - Nov 30, 2025"
-  const key = `${sunday.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })} - ${saturday.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`;
-
-  if (!weeks[key]) weeks[key] = [];
-  weeks[key].push(task);
-});
-
-// Sort weeks by the Sunday date (most recent first)
-const sortedWeekKeys = Object.keys(weeks).sort((a, b) => {
-  const parseSunday = str => {
-    // Take the first date in the string range, e.g., "Oct 26, 2025 - Nov 1, 2025"
-    return new Date(str.split(' - ')[0]);
-  };
-  return parseSunday(b) - parseSunday(a); // descending
-});
-
-
-// Sort tasks inside each week by due_date ascending
-sortedWeekKeys.forEach(week => {
-  weeks[week].sort((a, b) => new Date(a.due_date) - new Date(b.due_date));
-});
-
+  // Sort weeks descending
+  const sortedWeekKeys = Object.keys(weeks).sort((a, b) => new Date(b.split('_')[0]) - new Date(a.split('_')[0]));
 
   if (loading) return <div className="container"><p>Loading tasks...</p></div>;
   if (error) return <div className="container"><p className="error-text">{error}</p></div>;
@@ -153,17 +139,15 @@ sortedWeekKeys.forEach(week => {
           type="button"
           className="icon-btn"
           onClick={() => setFilterDate(new Date().toISOString().split('T')[0])}
-          title="Today"
         >
-          <FontAwesomeIcon icon={faCalendarAlt} />
+          <FontAwesomeIcon icon={faCalendarAlt} title="Today" />
         </button>
         <button
           type="button"
           className="icon-btn"
           onClick={() => setShowOverview(!showOverview)}
-          title="Overview"
         >
-          <FontAwesomeIcon icon={faFilter} />
+          <FontAwesomeIcon icon={faFilter} title="Overview" />
         </button>
       </h2>
 
@@ -192,43 +176,44 @@ sortedWeekKeys.forEach(week => {
         </div>
       </div>
 
-      {/* Tasks List */}
+      {/* Tasks List / Overview */}
       {showOverview ? (
-  sortedWeekKeys.map(week => (
-    <div key={week} className="week-group">
-      <h3>{week}</h3>
-      {weeks[week].map(task => (
-        <TaskItem
-          key={task.id}
-          task={task}
-          editingTask={editingTask}
-          setEditingTask={setEditingTask}
-          updateTask={updateTask}
-          toggleDone={toggleDone}
-          deleteTask={deleteTask}
-        />
-      ))}
-    </div>
-  ))
-) : (
-  filteredTasks.map(task => (
-    <TaskItem
-      key={task.id}
-      task={task}
-      editingTask={editingTask}
-      setEditingTask={setEditingTask}
-      updateTask={updateTask}
-      toggleDone={toggleDone}
-      deleteTask={deleteTask}
-    />
-  ))
-)}
-
+        sortedWeekKeys.map(weekKey => (
+          <div key={weekKey} className="week-group">
+            <h3>{weeks[weekKey].displayKey}</h3>
+            {weeks[weekKey].tasks.map(task => (
+              <div key={task.id} className="card task-card">
+                <TaskItem
+                  task={task}
+                  editingTask={editingTask}
+                  setEditingTask={setEditingTask}
+                  updateTask={updateTask}
+                  toggleDone={toggleDone}
+                  deleteTask={deleteTask}
+                />
+              </div>
+            ))}
+          </div>
+        ))
+      ) : (
+        filteredTasks.map(task => (
+          <div key={task.id} className="card task-card">
+            <TaskItem
+              task={task}
+              editingTask={editingTask}
+              setEditingTask={setEditingTask}
+              updateTask={updateTask}
+              toggleDone={toggleDone}
+              deleteTask={deleteTask}
+            />
+          </div>
+        ))
+      )}
     </div>
   );
 }
 
-// TaskItem component
+// --- Individual Task Item ---
 function TaskItem({ task, editingTask, setEditingTask, updateTask, toggleDone, deleteTask }) {
   const isEditing = editingTask?.id === task.id;
 
