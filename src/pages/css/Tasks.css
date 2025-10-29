@@ -95,6 +95,17 @@
   color: red;
 }
 
+/* === Unified Purple Focus Style === */
+input[type="text"]:focus,
+input[type="date"]:focus,
+textarea:focus,
+.subtask-edit-input:focus {
+  border-color: var(--purple-main);
+  outline: none;
+  box-shadow: 0 0 0 2px var(--purple-main);
+}
+
+
 /* === SUBTASKS STYLING === */
 
 .subtasks-container {
@@ -168,7 +179,7 @@
   margin-bottom: 8px;
   font-size: 15px;
   font-weight: 600;
-  color: #333;
+  color: var(--muted);
 }
 
 .subtask-item.edit-mode {
@@ -213,4 +224,39 @@
 
 .subtasks-container:not(.editing) .icon-btn.small {
   display: none;
+}
+
+/* === Round Purple Checkboxes === */
+input[type="checkbox"] {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 18px;
+  height: 18px;
+  border: 2px solid #a855f7; /* purple border */
+  border-radius: 50%; /* make it circular */
+  display: inline-block;
+  position: relative;
+  cursor: pointer;
+  background-color: #fff;
+  transition: all 0.2s ease;
+}
+
+input[type="checkbox"]:checked {
+  background-color: #a855f7; /* purple fill when checked */
+  border-color: #a855f7;
+}
+
+input[type="checkbox"]:checked::after {
+  content: '';
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: white; /* inner white dot for contrast */
+}
+
+input[type="checkbox"]:hover {
+  box-shadow: 0 0 0 3px rgba(168, 85, 247, 0.2); /* purple glow on hover */
 }
