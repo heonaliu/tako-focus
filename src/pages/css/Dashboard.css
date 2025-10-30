@@ -279,3 +279,40 @@
   margin-top: 1.5rem;
   gap: 1rem;
 }
+
+/* Success Animation */
+.success-animation {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  animation: fadeIn 0.4s ease-in-out;
+}
+
+.success-tako {
+  width: 100px;
+  height: auto;
+  animation: popUp 0.4s ease-in-out;
+}
+
+.success-text {
+  font-size: 1.2rem;
+  color: #9b6bff;
+  font-weight: bold;
+  margin-top: 1rem;
+  animation: fadeIn 0.6s ease-in-out;
+}
+
+@keyframes popUp {
+  0% {
+    transform: scale(0.7);
+    opacity: 0;
+  }
+  80% {
+    transform: scale(1.1);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1);
+  }
+}

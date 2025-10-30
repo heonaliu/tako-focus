@@ -13,6 +13,7 @@ export default function Dashboard({ user }) {
   const [streakCount, setStreakCount] = useState(0)
   const [modalOpen, setModalOpen] = useState(false)
   const [newTask, setNewTask] = useState(null)
+  const [showSuccess, setShowSuccess] = useState(false);
 
   useEffect(() => {
     if (!user) return
@@ -45,13 +46,10 @@ export default function Dashboard({ user }) {
   }, [user])
 
 async function saveSubtasks() {
-  if (!newTask) return
-
+  if (!newTask) return;
   try {
-    // Delete existing subtasks for this task
-    await supabase.from('subtasks').delete().eq('task_id', newTask.id)
+    await supabase.from('subtasks').delete().eq('task_id', newTask.id);
 
-    // Prepare cleaned subtasks without user_id
     const cleanedSubs = newTask.subtasks
       .filter((t) => t.trim() !== '')
       .map((title) => ({
@@ -60,22 +58,26 @@ async function saveSubtasks() {
         title,
         is_done: false,
         created_at: new Date().toISOString(),
-        }))
-
+      }));
 
     if (cleanedSubs.length > 0) {
-      const { error: subError } = await supabase.from('subtasks').insert(cleanedSubs)
-      if (subError) throw subError
+      const { error: subError } = await supabase.from('subtasks').insert(cleanedSubs);
+      if (subError) throw subError;
     }
 
-    console.log('✅ Subtasks saved for task:', newTask.title)
+    console.log('✅ Subtasks saved for task:', newTask.title);
 
-    // Close modal after saving
-    setModalOpen(false)
+    // Show success animation before closing modal
+    setShowSuccess(true);
+    setTimeout(() => {
+      setShowSuccess(false);
+      setModalOpen(false);
+    }, 1500);
   } catch (err) {
-    console.error('❌ Error saving subtasks:', err)
+    console.error('❌ Error saving subtasks:', err);
   }
 }
+
 
 
 
@@ -229,47 +231,57 @@ async function saveSubtasks() {
 
       {/* ✅ Modal */}
       {modalOpen && newTask && (
-        <div className="modal-overlay">
-          <div className="modal-card fade-in">
-            <h3>🧠 New Task Created</h3>
-            <h4 className="modal-task-title">{newTask.title}</h4>
-            <div className="modal-subtasks">
-              {newTask.subtasks.map((sub, i) => (
-                <div className="modal-subtask-row" key={i}>
-                  <input
-                    value={sub}
-                    placeholder="New subtask..."
-                    onChange={e => handleSubtaskChange(i, e.target.value)}
-                    className="modal-subtask-input"
-                  />
-                  <button
-                    className="trash-btn"
-                    onClick={() => removeSubtask(i)}
-                    aria-label="Delete subtask"
-                  >
-                    <FontAwesomeIcon icon={faTrash} />
-                  </button>
-                </div>
-              ))}
-            </div>
-            <button className="btn add-subtask-btn" onClick={addSubtask}>
-              + Add Subtask
-            </button>
-            <div className="modal-actions">
-              <button className="btn save-btn" onClick={() => {
-  console.log('🧩 Save button clicked')
-  saveSubtasks()
-}}>
-  Save Changes
-</button>
-
-              <button className="btn start-btn" onClick={startFocusSession}>
-                Start Focus Session
-              </button>
-            </div>
-          </div>
+  <div
+    className="modal-overlay"
+    onClick={(e) => {
+      if (e.target.classList.contains('modal-overlay')) setModalOpen(false);
+    }}
+  >
+    <div className="modal-card fade-in">
+      {showSuccess ? (
+        <div className="success-animation">
+          <img src={takoProud} alt="Tako Proud" className="success-tako" />
+          <p className="success-text">Saved!</p>
         </div>
+      ) : (
+        <>
+          <h3>🧠 New Task Created</h3>
+          <h4 className="modal-task-title">{newTask.title}</h4>
+          <div className="modal-subtasks">
+            {newTask.subtasks.map((sub, i) => (
+              <div className="modal-subtask-row" key={i}>
+                <input
+                  value={sub}
+                  placeholder="New subtask..."
+                  onChange={(e) => handleSubtaskChange(i, e.target.value)}
+                  className="modal-subtask-input"
+                />
+                <button
+                  className="trash-btn"
+                  onClick={() => removeSubtask(i)}
+                  aria-label="Delete subtask"
+                >
+                  <FontAwesomeIcon icon={faTrash} />
+                </button>
+              </div>
+            ))}
+          </div>
+          <button className="btn add-subtask-btn" onClick={addSubtask}>
+            + Add Subtask
+          </button>
+          <div className="modal-actions">
+            <button className="btn save-btn" onClick={saveSubtasks}>
+              Save Changes
+            </button>
+            <button className="btn start-btn" onClick={startFocusSession}>
+              Start Focus Session
+            </button>
+          </div>
+        </>
       )}
+    </div>
+  </div>
+)}
     </div>
   )
 }
