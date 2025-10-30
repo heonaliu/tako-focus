@@ -124,6 +124,7 @@ export default function Tasks({ user }) {
 
   const today = new Date();
 
+  // --- Group all tasks into weeks ---
   const weeks = {};
   tasks.forEach(task => {
     const taskDate = task.due;
@@ -144,13 +145,10 @@ export default function Tasks({ user }) {
     const endA = new Date(a.split('_')[1]);
     const startB = new Date(b.split('_')[0]);
     const endB = new Date(b.split('_')[1]);
-
     const aIsCurrent = startA <= today && today <= endA;
     const bIsCurrent = startB <= today && today <= endB;
-
     if (aIsCurrent) return -1;
     if (bIsCurrent) return 1;
-
     return startA - startB;
   });
 
@@ -199,6 +197,7 @@ export default function Tasks({ user }) {
   if (loading) return <div className="container"><p>Loading tasks...</p></div>;
   if (error) return <div className="container"><p className="error-text">{error}</p></div>;
 
+  // --- RENDER ---
   return (
     <div className="tasks-container">
       <h2 className="tasks-header">
@@ -291,6 +290,7 @@ export default function Tasks({ user }) {
           </div>
         ))
       ) : filterMode === 'all' ? (
+        // --- All Tasks stays the same ---
         sortedWeekKeys.map(weekKey => {
           const { displayKey, tasks: weekTasks } = weeks[weekKey];
           const incomplete = weekTasks.filter(t => !t.is_done);
@@ -298,73 +298,79 @@ export default function Tasks({ user }) {
           return (
             <div key={weekKey} className="week-group">
               <h3 className="week-header">{displayKey}</h3>
-
               {incomplete.length > 0 ? (
                 incomplete.map(task => (
-                  <TaskItem
-                    key={task.id}
-                    task={task}
-                    editingTask={editingTask}
-                    setEditingTask={setEditingTask}
-                    updateTask={updateTask}
-                    toggleDone={toggleDone}
-                    deleteTask={deleteTask}
-                  />
+                  <TaskItem key={task.id} task={task} editingTask={editingTask} setEditingTask={setEditingTask} updateTask={updateTask} toggleDone={toggleDone} deleteTask={deleteTask} />
                 ))
               ) : (
                 <p className="no-tasks">No pending tasks</p>
               )}
-
               {complete.length > 0 && (
                 <div className="completed-section">
                   <h4>Completed</h4>
                   {complete.map(task => (
-                    <TaskItem
-                      key={task.id}
-                      task={task}
-                      editingTask={editingTask}
-                      setEditingTask={setEditingTask}
-                      updateTask={updateTask}
-                      toggleDone={toggleDone}
-                      deleteTask={deleteTask}
-                    />
+                    <TaskItem key={task.id} task={task} editingTask={editingTask} setEditingTask={setEditingTask} updateTask={updateTask} toggleDone={toggleDone} deleteTask={deleteTask} />
                   ))}
                 </div>
               )}
             </div>
           );
         })
+      ) : filterMode === 'before' || filterMode === 'after' ? (
+        // --- Group before/after today by week ---
+        (() => {
+          const filteredWeeks = Object.keys(weeks).filter(key => {
+            const start = new Date(key.split('_')[0]);
+            const end = new Date(key.split('_')[1]);
+            return filterMode === 'before' ? end < today : start > today;
+          });
+
+          filteredWeeks.sort((a, b) => {
+            const startA = new Date(a.split('_')[0]);
+            const startB = new Date(b.split('_')[0]);
+            return filterMode === 'before' ? startB - startA : startA - startB;
+          });
+
+          return filteredWeeks.map(weekKey => {
+            const { displayKey, tasks: weekTasks } = weeks[weekKey];
+            const incomplete = weekTasks.filter(t => !t.is_done);
+            const complete = weekTasks.filter(t => t.is_done);
+            return (
+              <div key={weekKey} className="week-group">
+                <h3 className="week-header">{displayKey}</h3>
+                {incomplete.length > 0 ? (
+                  incomplete.map(task => (
+                    <TaskItem key={task.id} task={task} editingTask={editingTask} setEditingTask={setEditingTask} updateTask={updateTask} toggleDone={toggleDone} deleteTask={deleteTask} />
+                  ))
+                ) : (
+                  <p className="no-tasks">No pending tasks</p>
+                )}
+                {complete.length > 0 && (
+                  <div className="completed-section">
+                    <h4>Completed</h4>
+                    {complete.map(task => (
+                      <TaskItem key={task.id} task={task} editingTask={editingTask} setEditingTask={setEditingTask} updateTask={updateTask} toggleDone={toggleDone} deleteTask={deleteTask} />
+                    ))}
+                  </div>
+                )}
+              </div>
+            );
+          });
+        })()
       ) : (
         <>
           {incompleteTasks.length > 0 ? (
             incompleteTasks.map(task => (
-              <TaskItem
-                key={task.id}
-                task={task}
-                editingTask={editingTask}
-                setEditingTask={setEditingTask}
-                updateTask={updateTask}
-                toggleDone={toggleDone}
-                deleteTask={deleteTask}
-              />
+              <TaskItem key={task.id} task={task} editingTask={editingTask} setEditingTask={setEditingTask} updateTask={updateTask} toggleDone={toggleDone} deleteTask={deleteTask} />
             ))
           ) : (
             <p className="no-tasks">No tasks found 🎉</p>
           )}
-
           {completedTasks.length > 0 && (
             <div className="completed-section">
               <h3>Completed</h3>
               {completedTasks.map(task => (
-                <TaskItem
-                  key={task.id}
-                  task={task}
-                  editingTask={editingTask}
-                  setEditingTask={setEditingTask}
-                  updateTask={updateTask}
-                  toggleDone={toggleDone}
-                  deleteTask={deleteTask}
-                />
+                <TaskItem key={task.id} task={task} editingTask={editingTask} setEditingTask={setEditingTask} updateTask={updateTask} toggleDone={toggleDone} deleteTask={deleteTask} />
               ))}
             </div>
           )}
