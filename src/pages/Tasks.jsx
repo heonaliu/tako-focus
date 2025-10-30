@@ -7,10 +7,22 @@ import Calendar from 'react-calendar';
 import 'react-calendar/dist/Calendar.css';
 
 export default function Tasks({ user }) {
+
+      // 🕒 Utility to strip time & timezone (fixes date comparisons)
+function toLocalDate(dateInput) {
+  const d = new Date(dateInput);
+  return new Date(d.getFullYear(), d.getMonth(), d.getDate());
+}
+
+function getLocalISODate() {
+  const now = new Date();
+  const local = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  return local.toISOString().split('T')[0];
+}
   const [tasks, setTasks] = useState([]);
   const [title, setTitle] = useState('');
   const [notes, setNotes] = useState('');
-  const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
+  const [date, setDate] = useState(getLocalISODate);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [showOverview, setShowOverview] = useState(false);
@@ -66,7 +78,7 @@ export default function Tasks({ user }) {
       setTasks([newTask, ...tasks]);
       setTitle('');
       setNotes('');
-      setDate(new Date().toISOString().split('T')[0]);
+      setDate(getLocalISODate);
     } catch (err) {
       console.error(err);
       alert(err.message);
@@ -114,15 +126,15 @@ export default function Tasks({ user }) {
     }
   }
 
-  function isSameLocalDate(d1, d2) {
-    return (
-      d1.getFullYear() === d2.getFullYear() &&
-      d1.getMonth() === d2.getMonth() &&
-      d1.getDate() === d2.getDate()
-    );
-  }
 
-  const today = new Date();
+
+
+function isSameLocalDate(d1, d2) {
+  return toLocalDate(d1).getTime() === toLocalDate(d2).getTime();
+}
+
+
+  const today = toLocalDate(new Date());
 
   // --- Group all tasks into weeks ---
   const weeks = {};
@@ -164,19 +176,21 @@ export default function Tasks({ user }) {
       return [...tasks].sort((a, b) => a.due - b.due);
     }
     return tasks
+    
       .filter(task => {
-        const isToday = isSameLocalDate(task.due, today);
+        const taskDate = toLocalDate(task.due);
+        const isToday = isSameLocalDate(taskDate, today);
         if (filterMode === 'today') return isToday;
         if (filterMode === 'week') {
           const weekStart = new Date(today);
           weekStart.setDate(today.getDate() - today.getDay());
           const weekEnd = new Date(weekStart);
           weekEnd.setDate(weekStart.getDate() + 6);
-          return task.due >= weekStart && task.due <= weekEnd;
+          return taskDate >= weekStart && taskDate <= weekEnd;
         }
         if (filterMode === 'all') return true;
-        if (filterMode === 'before') return task.due < today;
-        if (filterMode === 'after') return task.due > today;
+        if (filterMode === 'before') return taskDate < today;
+        if (filterMode === 'after') return taskDate > today;
         return false;
       })
       .sort((a, b) => a.due - b.due);
