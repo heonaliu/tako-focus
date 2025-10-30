@@ -1,71 +1,147 @@
-.dashboard-container {
-  max-width: 1100px;
-  margin: 34px auto;
-  padding: 0 20px;
-}
-
-.dashboard-title {
-  margin-bottom: 8px;
-}
-
-.dashboard-grid {
-  display: grid;
-  grid-template-columns: 1fr 420px;
-  gap: 28px;
-  align-items: start;
-}
-
-@media (max-width: 900px) {
-  .dashboard-grid {
-    grid-template-columns: 1fr;
-  }
-}
-
-.total-focus-card {
-  margin-bottom: 20px;
-}
-
-.total-minutes {
-  font-size: 28px;
-  font-weight: 700;
-}
-
-.session-count {
-  color: var(--muted);
-}
-
-.recent-sessions-card ul {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-}
-
-.session-item {
-  padding: 8px 0;
-  border-bottom: 1px solid #f0f0f0;
-}
-
-.session-row {
-  display: flex;
-  justify-content: space-between;
-}
-
-.session-duration {
-  color: var(--muted);
-}
-
-.encouragement-card {
+.focus-plan-box {
   text-align: center;
+  margin: 2rem auto;
+  padding: 2rem;
+  background: var(--card-bg, #1f1f2e);
+  border-radius: 1rem;
+  max-width: 500px;
+  box-shadow: 0 0 10px rgba(0,0,0,0.2);
 }
 
-.encouragement-img {
-  width: 220px;
+.focus-plan-box h3 {
+  margin-bottom: 1rem;
 }
 
-.encouragement-text {
-  color: var(--muted);
-  margin-top: 0;
+.focus-input {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border-radius: 0.75rem;
+  border: none;
+  background: #2a2a3d;
+  color: #fff;
+  font-size: 1rem;
+  margin-bottom: 1rem;
+  outline: none;
 }
-.start-session-btn {
-  margin-top: 12px;
+
+.focus-input::placeholder {
+  color: #aaa;
+}
+
+.generate-btn {
+  background-color: var(--purple-light, #9b6bff);
+  color: white;
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.75rem;
+  border: none;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.generate-btn:hover {
+  transform: scale(1.05);
+}
+
+.generated-plan {
+  text-align: left;
+  margin-top: 1.5rem;
+  background: rgba(255,255,255,0.05);
+  border-radius: 0.75rem;
+  padding: 1rem;
+}
+
+.generated-plan ul {
+  margin: 0.5rem 0 0;
+  padding-left: 1.25rem;
+}
+
+.generated-plan li {
+  margin-bottom: 0.5rem;
+  color: #ccc;
+}
+
+
+/* --- Focus Input Card --- */
+.focus-plan-card {
+  text-align: center;
+  margin: 2rem auto;
+  padding: 2rem;
+  background: rgba(209, 188, 255, 0.15); /* Muted purple */
+  border: 1px solid rgba(155, 107, 255, 0.25);
+  border-radius: 1rem;
+  max-width: 520px;
+  box-shadow: 0 0 15px rgba(154, 107, 255, 0.211);
+  backdrop-filter: blur(8px);
+}
+
+.focus-plan-card h3 {
+  color: var(--card-bg);
+  margin-bottom: 1rem;
+}
+
+.focus-input {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border-radius: 0.75rem;
+  border: none;
+  background: #2b2442;
+  color: #fff;
+  font-size: 1rem;
+  margin-bottom: 1rem;
+  outline: none;
+}
+
+.focus-input::placeholder {
+  color: #aaa;
+}
+
+.generate-btn {
+  background-color: var(--purple-light, #9b6bff);
+  color: white;
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.75rem;
+  border: none;
+  cursor: pointer;
+  transition: transform 0.2s ease, background 0.3s ease;
+}
+
+.generate-btn:hover {
+  transform: scale(1.05);
+  background-color: #b58aff;
+}
+
+/* --- Streak Card --- */
+.streak-card {
+  text-align: center;
+  padding: 2rem;
+  background: rgba(50, 40, 70, 0.6);
+  border-radius: 1rem;
+  border: 1px solid rgba(155, 107, 255, 0.25);
+  box-shadow: 0 0 20px rgba(155, 107, 255, 0.15);
+}
+
+.streak-mascot {
+  width: 120px;
+  margin-bottom: 1rem;
+  animation: floatUpDown 4s ease-in-out infinite;
+}
+
+.streak-count {
+  font-size: 2rem;
+  font-weight: bold;
+  color: var(--purple-light);
+  margin: 0.5rem 0;
+}
+
+.streak-text {
+  color: #cbbbe8;
+}
+
+@keyframes floatUpDown {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
 }
