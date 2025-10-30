@@ -290,6 +290,50 @@ export default function Tasks({ user }) {
             ))}
           </div>
         ))
+      ) : filterMode === 'all' ? (
+        sortedWeekKeys.map(weekKey => {
+          const { displayKey, tasks: weekTasks } = weeks[weekKey];
+          const incomplete = weekTasks.filter(t => !t.is_done);
+          const complete = weekTasks.filter(t => t.is_done);
+          return (
+            <div key={weekKey} className="week-group">
+              <h3 className="week-header">{displayKey}</h3>
+
+              {incomplete.length > 0 ? (
+                incomplete.map(task => (
+                  <TaskItem
+                    key={task.id}
+                    task={task}
+                    editingTask={editingTask}
+                    setEditingTask={setEditingTask}
+                    updateTask={updateTask}
+                    toggleDone={toggleDone}
+                    deleteTask={deleteTask}
+                  />
+                ))
+              ) : (
+                <p className="no-tasks">No pending tasks</p>
+              )}
+
+              {complete.length > 0 && (
+                <div className="completed-section">
+                  <h4>Completed</h4>
+                  {complete.map(task => (
+                    <TaskItem
+                      key={task.id}
+                      task={task}
+                      editingTask={editingTask}
+                      setEditingTask={setEditingTask}
+                      updateTask={updateTask}
+                      toggleDone={toggleDone}
+                      deleteTask={deleteTask}
+                    />
+                  ))}
+                </div>
+              )}
+            </div>
+          );
+        })
       ) : (
         <>
           {incompleteTasks.length > 0 ? (
@@ -329,6 +373,7 @@ export default function Tasks({ user }) {
     </div>
   );
 }
+
 // ---- TaskItem ----
 function TaskItem({ task, editingTask, setEditingTask, updateTask, toggleDone, deleteTask }) {
   const [subtasks, setSubtasks] = useState([]);

@@ -6,6 +6,8 @@
   --text: #2B2B2B;
   --muted: #6B6B6B;
 }
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap');
+
 
 .tasks-container {
   max-width: 900px;
@@ -422,7 +424,7 @@ input[type="checkbox"]:hover {
 .calendar-modal {
   background: #fff;
   border-radius: 16px;
-  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.25);
+  box-shadow: 0 6px 24px var(--muted);
   padding: 20px;
   position: relative;
   animation: fadeIn 0.2s ease-out;
@@ -435,7 +437,7 @@ input[type="checkbox"]:hover {
   right: 8px;
   background: transparent;
   border: none;
-  color: #777;
+  color: var(--muted);
   cursor: pointer;
   font-size: 1.2rem;
   transition: color 0.2s ease;
@@ -449,7 +451,7 @@ input[type="checkbox"]:hover {
 .react-calendar {
   border: none;
   border-radius: 12px;
-  font-family: 'Inter', sans-serif;
+  font-family: 'Poppins', sans-serif;
   background: #fafafa;
   padding: 10px;
 }
@@ -462,7 +464,7 @@ input[type="checkbox"]:hover {
 }
 
 .react-calendar__navigation button {
-  color: #4b2e83;
+  color: var(--purple-main);
   background: none;
   border: none;
   font-weight: 600;
@@ -486,7 +488,7 @@ input[type="checkbox"]:hover {
 
 .react-calendar__tile:enabled:hover {
   background: #f3e5f5;
-  color: #4b2e83;
+  color: var(--purple-main);
 }
 
 .react-calendar__tile--active {
