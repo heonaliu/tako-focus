@@ -2,7 +2,9 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { supabase } from '../supabaseClient';
 import './css/Tasks.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faCheck, faTrash, faEdit, faCalendarAlt } from '@fortawesome/free-solid-svg-icons';
+import { faCheck, faTrash, faEdit, faCalendarAlt, faTimes } from '@fortawesome/free-solid-svg-icons';
+import Calendar from 'react-calendar';
+import 'react-calendar/dist/Calendar.css';
 
 export default function Tasks({ user }) {
   const [tasks, setTasks] = useState([]);
@@ -14,6 +16,8 @@ export default function Tasks({ user }) {
   const [showOverview, setShowOverview] = useState(false);
   const [editingTask, setEditingTask] = useState(null);
   const [filterMode, setFilterMode] = useState('today');
+  const [showCalendarModal, setShowCalendarModal] = useState(false);
+  const [selectedDate, setSelectedDate] = useState(null);
 
   const loadTasks = useCallback(async () => {
     setLoading(true);
@@ -110,7 +114,16 @@ export default function Tasks({ user }) {
     }
   }
 
-  // Group tasks by week for overview
+  function isSameLocalDate(d1, d2) {
+    return (
+      d1.getFullYear() === d2.getFullYear() &&
+      d1.getMonth() === d2.getMonth() &&
+      d1.getDate() === d2.getDate()
+    );
+  }
+
+  const today = new Date();
+
   const weeks = {};
   tasks.forEach(task => {
     const taskDate = task.due;
@@ -125,8 +138,6 @@ export default function Tasks({ user }) {
     if (!weeks[weekKey]) weeks[weekKey] = { displayKey, tasks: [] };
     weeks[weekKey].tasks.push(task);
   });
-
-  const today = new Date();
 
   const sortedWeekKeys = Object.keys(weeks).sort((a, b) => {
     const startA = new Date(a.split('_')[0]);
@@ -147,19 +158,14 @@ export default function Tasks({ user }) {
     weeks[weekKey].tasks.sort((a, b) => a.due - b.due);
   });
 
-  function isSameLocalDate(d1, d2) {
-    return (
-      d1.getFullYear() === d2.getFullYear() &&
-      d1.getMonth() === d2.getMonth() &&
-      d1.getDate() === d2.getDate()
-    );
-  }
-
-  // 🟣 Updated activeTasks logic
-  // 🟣 Updated activeTasks logic
-const activeTasks = showOverview
-  ? [...tasks].sort((a, b) => a.due - b.due)
-  : tasks
+  const activeTasks = (() => {
+    if (selectedDate) {
+      return tasks.filter(task => isSameLocalDate(task.due, selectedDate)).sort((a, b) => a.due - b.due);
+    }
+    if (showOverview) {
+      return [...tasks].sort((a, b) => a.due - b.due);
+    }
+    return tasks
       .filter(task => {
         const isToday = isSameLocalDate(task.due, today);
         if (filterMode === 'today') return isToday;
@@ -176,13 +182,19 @@ const activeTasks = showOverview
         return false;
       })
       .sort((a, b) => a.due - b.due);
+  })();
 
+  const completedTasks = activeTasks.filter(task => task.is_done);
+  const incompleteTasks = activeTasks.filter(task => !task.is_done);
 
-  const completedTasks = !showOverview
-    ? tasks
-        .filter(task => task.is_done && isSameLocalDate(task.due, today))
-        .sort((a, b) => b.due - a.due)
-    : [];
+  const weekTasksByDay = {};
+  if (filterMode === 'week' && !selectedDate) {
+    activeTasks.forEach(task => {
+      const key = task.due.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' });
+      if (!weekTasksByDay[key]) weekTasksByDay[key] = [];
+      weekTasksByDay[key].push(task);
+    });
+  }
 
   if (loading) return <div className="container"><p>Loading tasks...</p></div>;
   if (error) return <div className="container"><p className="error-text">{error}</p></div>;
@@ -190,31 +202,51 @@ const activeTasks = showOverview
   return (
     <div className="tasks-container">
       <h2 className="tasks-header">
-  <FontAwesomeIcon icon={faCalendarAlt} /> Tasks
-</h2>
+        <span className="calendar-icon" onClick={() => setShowCalendarModal(true)}>
+          <FontAwesomeIcon icon={faCalendarAlt} />
+        </span>
+        Tasks
+      </h2>
 
-{/* 🟣 Always-visible filter bar */}
-<div className="filter-bar">
-  {['today', 'week', 'all', 'before', 'after'].map(mode => (
-    <button
-      key={mode}
-      onClick={() => {
-        setFilterMode(mode);
-        setShowOverview(mode === 'all');
-      }}
-      className={`filter-option ${filterMode === mode ? 'active' : ''}`}
-    >
-      {mode === 'today' && 'Today'}
-      {mode === 'week' && 'This Week'}
-      {mode === 'all' && 'All Tasks'}
-      {mode === 'before' && 'Before Today'}
-      {mode === 'after' && 'After Today'}
-    </button>
-  ))}
-</div>
+      <div className="filter-bar">
+        {['today', 'week', 'all', 'before', 'after'].map(mode => (
+          <button
+            key={mode}
+            onClick={() => {
+              setSelectedDate(null);
+              setFilterMode(mode);
+              setShowOverview(mode === 'all');
+            }}
+            className={`filter-option ${selectedDate ? '' : (filterMode === mode ? 'active' : '')}`}
+          >
+            {mode === 'today' && 'Today'}
+            {mode === 'week' && 'This Week'}
+            {mode === 'all' && 'All Tasks'}
+            {mode === 'before' && 'Before Today'}
+            {mode === 'after' && 'After Today'}
+          </button>
+        ))}
+      </div>
 
+      {showCalendarModal && (
+        <div className="calendar-modal-overlay">
+          <div className="calendar-modal">
+            <button className="close-btn" onClick={() => setShowCalendarModal(false)}>
+              <FontAwesomeIcon icon={faTimes} />
+            </button>
+            <Calendar
+              onChange={date => {
+                setSelectedDate(date);
+                setShowCalendarModal(false);
+                setFilterMode('');
+                setShowOverview(false);
+              }}
+              value={selectedDate || new Date()}
+            />
+          </div>
+        </div>
+      )}
 
-      {/* New Task Card */}
       <div className="card new-task-card">
         <input
           className="task-input"
@@ -241,20 +273,11 @@ const activeTasks = showOverview
         </div>
       </div>
 
-      {/* Task List */}
-      {showOverview ? (
-        sortedWeekKeys.map(weekKey => (
-          <div key={weekKey} className="week-group">
-            <h3
-              className={(function () {
-                const start = new Date(weekKey.split('_')[0]);
-                const end = new Date(weekKey.split('_')[1]);
-                return start <= today && today <= end ? 'current-week' : '';
-              })()}
-            >
-              {weeks[weekKey].displayKey}
-            </h3>
-            {weeks[weekKey].tasks.map(task => (
+      {filterMode === 'week' && !selectedDate ? (
+        Object.keys(weekTasksByDay).map(day => (
+          <div key={day} className="day-group">
+            <h3 className="day-header">{day}</h3>
+            {weekTasksByDay[day].map(task => (
               <TaskItem
                 key={task.id}
                 task={task}
@@ -269,8 +292,8 @@ const activeTasks = showOverview
         ))
       ) : (
         <>
-          {activeTasks.length > 0 ? (
-            activeTasks.map(task => (
+          {incompleteTasks.length > 0 ? (
+            incompleteTasks.map(task => (
               <TaskItem
                 key={task.id}
                 task={task}
@@ -306,7 +329,6 @@ const activeTasks = showOverview
     </div>
   );
 }
-
 // ---- TaskItem ----
 function TaskItem({ task, editingTask, setEditingTask, updateTask, toggleDone, deleteTask }) {
   const [subtasks, setSubtasks] = useState([]);
@@ -392,69 +414,51 @@ function TaskItem({ task, editingTask, setEditingTask, updateTask, toggleDone, d
           />
 
           {/* Subtasks Editing Section */}
-          <div className={`subtasks-container ${isEditing ? 'editing' : ''}`}>
-  {loadingSubs ? (
-    <div className="subtask-loading">Loading subtasks...</div>
-  ) : (
-    subtasks.length > 0 && (
-      <>
-        <h4>Subtasks</h4>
-        {subtasks.map(st => (
-          <div key={st.id} className={`subtask-item ${isEditing ? 'edit-mode' : ''}`}>
-            <input
-              type="checkbox"
-              checked={st.is_done}
-              onChange={() => toggleSubtaskDone(st.id, st.is_done)}
-            />
-            {isEditing ? (
+          <div className="subtasks-container editing">
+            {loadingSubs ? (
+              <div className="subtask-loading">Loading subtasks...</div>
+            ) : subtasks.length > 0 && (
               <>
-                <input
-                  type="text"
-                  className="subtask-edit-input"
-                  value={st.title}
-                  onChange={e => updateSubtaskTitle(st.id, e.target.value)}
-                />
-                <button
-                  className="icon-btn small"
-                  onClick={() => deleteSubtask(st.id)}
-                >
-                  <FontAwesomeIcon icon={faTrash} />
-                </button>
+                <h4>Subtasks</h4>
+                {subtasks.map(st => (
+                  <div key={st.id} className="subtask-item edit-mode">
+                    <input
+                      type="checkbox"
+                      checked={st.is_done}
+                      onChange={() => toggleSubtaskDone(st.id, st.is_done)}
+                    />
+                    <input
+                      type="text"
+                      className="subtask-edit-input"
+                      value={st.title}
+                      onChange={e => updateSubtaskTitle(st.id, e.target.value)}
+                    />
+                    <button className="icon-btn small" onClick={() => deleteSubtask(st.id)}>
+                      <FontAwesomeIcon icon={faTrash} />
+                    </button>
+                  </div>
+                ))}
               </>
-            ) : (
-              <span className={st.is_done ? 'done' : ''}>{st.title}</span>
             )}
+
+            <div className="add-subtask">
+              <input
+                type="text"
+                placeholder="New subtask..."
+                value={newSubtaskTitle}
+                onChange={e => setNewSubtaskTitle(e.target.value)}
+              />
+              <button className="btn small-btn" onClick={addSubtask}>
+                Add
+              </button>
+            </div>
           </div>
-        ))}
-      </>
-    )
-  )}
-
-  {isEditing && (
-    <div className="add-subtask">
-      <input
-        type="text"
-        placeholder="New subtask..."
-        value={newSubtaskTitle}
-        onChange={e => setNewSubtaskTitle(e.target.value)}
-      />
-      <button className="btn small-btn" onClick={addSubtask}>
-        Add
-      </button>
-    </div>
-  )}
-</div>
-
 
           <div className="task-buttons">
             <button type="button" className="icon-btn" onClick={() => updateTask(editingTask)}>
               <FontAwesomeIcon icon={faCheck} title="Save" />
             </button>
-            <button
-              type="button"
-              className="icon-btn"
-              onClick={() => setEditingTask(null)}
-            >
+            <button type="button" className="icon-btn" onClick={() => setEditingTask(null)}>
               Cancel
             </button>
           </div>
@@ -473,25 +477,25 @@ function TaskItem({ task, editingTask, setEditingTask, updateTask, toggleDone, d
             </div>
           </div>
 
-          {/* Subtasks List */}
-          <div className="subtasks-container">
-            {loadingSubs ? (
-              <div className="subtask-loading">Loading subtasks...</div>
-            ) : subtasks.length === 0 ? (
-              <div className="subtask-empty">No subtasks</div>
-            ) : (
-              subtasks.map(st => (
-                <div key={st.id} className="subtask-item">
-                  <input
-                    type="checkbox"
-                    checked={st.is_done}
-                    onChange={() => toggleSubtaskDone(st.id, st.is_done)}
-                  />
-                  <span className={st.is_done ? 'done' : ''}>{st.title}</span>
-                </div>
-              ))
-            )}
-          </div>
+          {/* Subtasks */}
+          {subtasks.length > 0 && (
+            <div className="subtasks-container">
+              {loadingSubs ? (
+                <div className="subtask-loading">Loading subtasks...</div>
+              ) : (
+                subtasks.map(st => (
+                  <div key={st.id} className="subtask-item">
+                    <input
+                      type="checkbox"
+                      checked={st.is_done}
+                      onChange={() => toggleSubtaskDone(st.id, st.is_done)}
+                    />
+                    <span className={st.is_done ? 'done' : ''}>{st.title}</span>
+                  </div>
+                ))
+              )}
+            </div>
+          )}
 
           <div className="task-buttons">
             <button type="button" className="icon-btn" onClick={() => toggleDone(task.id, task.is_done)}>
