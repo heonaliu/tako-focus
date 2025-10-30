@@ -11,11 +11,11 @@ export default function Tasks({ user }) {
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [filterDate, setFilterDate] = useState(new Date().toISOString().split('T')[0]);
   const [showOverview, setShowOverview] = useState(false);
   const [editingTask, setEditingTask] = useState(null);
+  const [filterMode, setFilterMode] = useState('today');
+  const [filterOpen, setFilterOpen] = useState(false);
 
-  // ---- Load Tasks ----
   const loadTasks = useCallback(async () => {
     setLoading(true);
     try {
@@ -25,7 +25,6 @@ export default function Tasks({ user }) {
         .eq('user_id', user.id);
       if (error) throw error;
 
-      // Parse Supabase date as local (avoid UTC conversion)
       const tasksWithDates = (data || []).map(task => {
         const [year, month, day] = task.due_date.split('-').map(Number);
         return { ...task, due: new Date(year, month - 1, day) };
@@ -45,7 +44,6 @@ export default function Tasks({ user }) {
     loadTasks();
   }, [user, loadTasks]);
 
-  // ---- CRUD Operations ----
   async function createTask() {
     if (!title.trim()) return;
     try {
@@ -55,7 +53,7 @@ export default function Tasks({ user }) {
           user_id: user.id,
           title,
           notes,
-          due_date: date
+          due_date: date,
         })
         .select();
       if (error) throw error;
@@ -79,7 +77,7 @@ export default function Tasks({ user }) {
         .update({
           title: task.title,
           notes: task.notes,
-          due_date: task.due_date
+          due_date: task.due_date,
         })
         .eq('id', task.id)
         .select();
@@ -113,7 +111,7 @@ export default function Tasks({ user }) {
     }
   }
 
-  // ---- Overview Grouping ----
+  // Group tasks by week for overview
   const weeks = {};
   tasks.forEach(task => {
     const taskDate = task.due;
@@ -123,7 +121,7 @@ export default function Tasks({ user }) {
     saturday.setDate(sunday.getDate() + 6);
 
     const weekKey = `${sunday.toISOString().split('T')[0]}_${saturday.toISOString().split('T')[0]}`;
-    const displayKey = `${sunday.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })} - ${saturday.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`;
+    const displayKey = `${sunday.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} - ${saturday.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`;
 
     if (!weeks[weekKey]) weeks[weekKey] = { displayKey, tasks: [] };
     weeks[weekKey].tasks.push(task);
@@ -150,7 +148,6 @@ export default function Tasks({ user }) {
     weeks[weekKey].tasks.sort((a, b) => a.due - b.due);
   });
 
-  // ---- Filtering Logic ----
   function isSameLocalDate(d1, d2) {
     return (
       d1.getFullYear() === d2.getFullYear() &&
@@ -159,40 +156,69 @@ export default function Tasks({ user }) {
     );
   }
 
+  // 🟣 Updated activeTasks logic
   const activeTasks = showOverview
     ? [...tasks].sort((a, b) => a.due - b.due)
     : tasks
-        .filter(task => !task.is_done && isSameLocalDate(task.due, today))
+        .filter(task => {
+          const isToday = isSameLocalDate(task.due, today);
+          if (filterMode === 'today') return !task.is_done && isToday;
+          if (filterMode === 'week') {
+            const weekStart = new Date(today);
+            weekStart.setDate(today.getDate() - today.getDay());
+            const weekEnd = new Date(weekStart);
+            weekEnd.setDate(weekStart.getDate() + 6);
+            return !task.is_done && task.due >= weekStart && task.due <= weekEnd;
+          }
+          if (filterMode === 'all') return !task.is_done;
+          if (filterMode === 'before') return !task.is_done && task.due < today;
+          if (filterMode === 'after') return !task.is_done && task.due > today;
+          return false;
+        })
         .sort((a, b) => a.due - b.due);
 
-const completedTasks = !showOverview
-  ? tasks
-      .filter(task => task.is_done && isSameLocalDate(task.due, today))
-      .sort((a, b) => b.due - a.due)
-  : [];
+  const completedTasks = !showOverview
+    ? tasks
+        .filter(task => task.is_done && isSameLocalDate(task.due, today))
+        .sort((a, b) => b.due - a.due)
+    : [];
 
-  // ---- UI ----
   if (loading) return <div className="container"><p>Loading tasks...</p></div>;
   if (error) return <div className="container"><p className="error-text">{error}</p></div>;
 
   return (
     <div className="tasks-container">
       <h2 className="tasks-header">
-        Tasks
-        <button
-          type="button"
-          className="icon-btn"
-          onClick={() => setFilterDate(new Date().toISOString().split('T')[0])}
-        >
-          <FontAwesomeIcon icon={faCalendarAlt} title="Today" />
-        </button>
-        <button
-          type="button"
-          className="icon-btn"
-          onClick={() => setShowOverview(!showOverview)}
-        >
-          <FontAwesomeIcon icon={faFilter} title="Overview" />
-        </button>
+        <FontAwesomeIcon icon={faCalendarAlt} /> Tasks
+
+        {/* 🟣 Filter Button */}
+        <div className="filter-dropdown">
+          <button className="filter-btn" onClick={() => setFilterOpen(!filterOpen)}>
+            <FontAwesomeIcon icon={faFilter} /> Filter
+          </button>
+
+          {filterOpen && (
+            <div className="filter-options">
+              {['today', 'week', 'all', 'before', 'after'].map(mode => (
+                <button
+                  key={mode}
+                  onClick={() => {
+                    setFilterMode(mode);
+                    setFilterOpen(false);
+                    setShowOverview(mode === 'all');
+                  }}
+                  className={`filter-option ${filterMode === mode ? 'active' : ''}`}
+                >
+                  {mode === 'today' && 'Today'}
+                  {mode === 'week' && 'This Week'}
+                  {mode === 'all' && 'All Tasks'}
+                  {mode === 'before' && 'Before Today'}
+                  {mode === 'after' && 'After Today'}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
       </h2>
 
       {/* New Task Card */}
@@ -263,7 +289,7 @@ const completedTasks = !showOverview
               />
             ))
           ) : (
-            <p className="no-tasks">No tasks for today 🎉</p>
+            <p className="no-tasks">No tasks found 🎉</p>
           )}
 
           {completedTasks.length > 0 && (
@@ -294,7 +320,6 @@ function TaskItem({ task, editingTask, setEditingTask, updateTask, toggleDone, d
   const [newSubtaskTitle, setNewSubtaskTitle] = useState('');
   const [loadingSubs, setLoadingSubs] = useState(true);
 
-  // Load subtasks
   useEffect(() => {
     const loadSubtasks = async () => {
       setLoadingSubs(true);
@@ -309,7 +334,6 @@ function TaskItem({ task, editingTask, setEditingTask, updateTask, toggleDone, d
     loadSubtasks();
   }, [task.id]);
 
-  // Add subtask
   const addSubtask = async () => {
     if (!newSubtaskTitle.trim()) return;
     const { data, error } = await supabase
@@ -325,19 +349,16 @@ function TaskItem({ task, editingTask, setEditingTask, updateTask, toggleDone, d
     }
   };
 
-  // Toggle subtask done
   const toggleSubtaskDone = async (id, done) => {
     await supabase.from('subtasks').update({ is_done: !done }).eq('id', id);
     setSubtasks(subtasks.map(st => (st.id === id ? { ...st, is_done: !done } : st)));
   };
 
-  // Delete subtask
   const deleteSubtask = async (id) => {
     await supabase.from('subtasks').delete().eq('id', id);
     setSubtasks(subtasks.filter(st => st.id !== id));
   };
 
-  // Edit subtask title
   const updateSubtaskTitle = async (id, newTitle) => {
     const { error } = await supabase
       .from('subtasks')
@@ -408,7 +429,6 @@ function TaskItem({ task, editingTask, setEditingTask, updateTask, toggleDone, d
               ))
             )}
 
-            {/* Add new subtask */}
             <div className="add-subtask">
               <input
                 type="text"
@@ -464,9 +484,6 @@ function TaskItem({ task, editingTask, setEditingTask, updateTask, toggleDone, d
                     onChange={() => toggleSubtaskDone(st.id, st.is_done)}
                   />
                   <span className={st.is_done ? 'done' : ''}>{st.title}</span>
-                  <button className="icon-btn small" onClick={() => deleteSubtask(st.id)}>
-                    <FontAwesomeIcon icon={faTrash} />
-                  </button>
                 </div>
               ))
             )}
