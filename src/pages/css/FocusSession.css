@@ -339,6 +339,48 @@
   }
 }
 
+.start-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 999;
+}
+
+.start-modal {
+  background: var(--bg, #1e1e2f);
+  padding: 2rem;
+  border-radius: 1rem;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+  text-align: center;
+  max-width: 300px;
+}
+
+.start-modal h3 {
+  margin-bottom: 0.5rem;
+}
+
+.modal-actions {
+  margin-top: 1.5rem;
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+}
+
+.confirm-btn {
+  background-color: var(--purple-light);
+  color: white;
+}
+
+.cancel-btn {
+  background-color: transparent;
+  border: 1px solid #888;
+  color: #ccc;
+}
+
+
 .exit-button-wrapper {
   position: absolute;
   bottom: 5%;

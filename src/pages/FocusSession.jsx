@@ -14,6 +14,9 @@ export default function FocusSession({ user }) {
   const [isSessionActive, setIsSessionActive] = useState(false)
   const [todayTasks, setTodayTasks] = useState([])
   const [subtasks, setSubtasks] = useState({})
+  const [showStartModal, setShowStartModal] = useState(false)
+
+  
 
   // Load today's tasks + subtasks
   const loadTodayTasks = useCallback(async () => {
@@ -226,19 +229,45 @@ export default function FocusSession({ user }) {
               )}
 
               <Timer
-                key={`${isBreak ? 'break' : 'study'}-${cycleCount}-${mode}`}
-                initialMinutes={isBreak ? breakDuration : studyDuration}
-                onComplete={handleComplete}
-                mode={isBreak ? 'break' : 'study'}
-              />
+  key={`${isBreak ? 'break' : 'study'}-${cycleCount}-${mode}`}
+  initialMinutes={isBreak ? breakDuration : studyDuration}
+  onComplete={handleComplete}
+  mode={isBreak ? 'break' : 'study'}
+/>
               <div className="session-controls">
-                <button
-                  className="btn start-btn"
-                  onClick={() => setIsSessionActive(true)}
-                >
-                  Start Session
-                </button>
-              </div>
+  <button
+    className="btn start-btn"
+    onClick={() => setShowStartModal(true)}
+  >
+    Start Session
+  </button>
+</div>
+{/* Confirmation modal */}
+{showStartModal && (
+  <div className="start-modal-overlay">
+    <div className="start-modal fade-in">
+      <h3>Start Focus Session?</h3>
+      <p>Are you ready to enter focus mode?</p>
+      <div className="modal-actions">
+        <button
+          className="btn confirm-btn"
+          onClick={() => {
+            setShowStartModal(false)
+            setIsSessionActive(true)
+          }}
+        >
+          Yes, start
+        </button>
+        <button
+          className="btn secondary cancel-btn"
+          onClick={() => setShowStartModal(false)}
+        >
+          Cancel
+        </button>
+      </div>
+    </div>
+  </div>
+)}
             </div>
           </div>
 
