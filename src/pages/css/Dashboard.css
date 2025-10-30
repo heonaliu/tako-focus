@@ -248,6 +248,7 @@
   align-items: center;
   z-index: 999;
   animation: fadeIn 0.3s ease;
+  pointer-events: all;
 }
 
 .modal-card {

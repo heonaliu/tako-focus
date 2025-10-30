@@ -44,6 +44,41 @@ export default function Dashboard({ user }) {
     load()
   }, [user])
 
+async function saveSubtasks() {
+  if (!newTask) return
+
+  try {
+    // Delete existing subtasks for this task
+    await supabase.from('subtasks').delete().eq('task_id', newTask.id)
+
+    // Prepare cleaned subtasks without user_id
+    const cleanedSubs = newTask.subtasks
+      .filter((t) => t.trim() !== '')
+      .map((title) => ({
+        user_id: user.id,
+        task_id: newTask.id,
+        title,
+        is_done: false,
+        created_at: new Date().toISOString(),
+        }))
+
+
+    if (cleanedSubs.length > 0) {
+      const { error: subError } = await supabase.from('subtasks').insert(cleanedSubs)
+      if (subError) throw subError
+    }
+
+    console.log('✅ Subtasks saved for task:', newTask.title)
+
+    // Close modal after saving
+    setModalOpen(false)
+  } catch (err) {
+    console.error('❌ Error saving subtasks:', err)
+  }
+}
+
+
+
   async function generatePlan() {
     if (!focusGoal.trim() || !user) return
     setLoadingPlan(true)
@@ -53,8 +88,6 @@ export default function Dashboard({ user }) {
         'Define your objective clearly',
         'Gather materials or references',
         'Work deeply for 25 minutes',
-        'Take a 5-minute refresh break',
-        'Summarize what you accomplished',
       ]
 
       const { data: taskData, error: taskError } = await supabase
@@ -130,10 +163,6 @@ export default function Dashboard({ user }) {
     }))
   }
 
-  function saveSubtasks() {
-    console.log('Saved subtasks:', newTask)
-    setModalOpen(false)
-  }
 
   function startFocusSession() {
     window.location.href = '/focus'
@@ -227,9 +256,13 @@ export default function Dashboard({ user }) {
               + Add Subtask
             </button>
             <div className="modal-actions">
-              <button className="btn save-btn" onClick={saveSubtasks}>
-                Save Changes
-              </button>
+              <button className="btn save-btn" onClick={() => {
+  console.log('🧩 Save button clicked')
+  saveSubtasks()
+}}>
+  Save Changes
+</button>
+
               <button className="btn start-btn" onClick={startFocusSession}>
                 Start Focus Session
               </button>
