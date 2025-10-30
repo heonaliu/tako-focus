@@ -41,7 +41,7 @@ export default function Timer({
 
   const mm = String(Math.floor(secondsLeft / 60)).padStart(2, '0')
   const ss = String(secondsLeft % 60).padStart(2, '0')
-  const color = mode === 'break' ? '#22c55e' : '#ef4444' // Tailwind green/red tones
+  const color = mode === 'break' ? '#34D399' : '#C77DFF' // Tailwind green/red tones
 
   return (
     <div style={{ textAlign: 'center' }}>
