@@ -1,9 +1,11 @@
-import React, { useState, useEffect, useCallback } from 'react'
+import React, { useState, useEffect, useCallback, useRef } from 'react'
 import Timer from '../components/Timer'
 import ExitButton from '../components/ExitButton'
 import { supabase } from '../supabaseClient'
 import './css/FocusSession.css'
 import FloatingMascot from '../components/FloatingMascot'
+import confetti from 'canvas-confetti'
+import takoProud from '../assets/tako_proud.png'
 
 export default function FocusSession({ user }) {
   const [mode, setMode] = useState('pomodoro')
@@ -15,13 +17,19 @@ export default function FocusSession({ user }) {
   const [todayTasks, setTodayTasks] = useState([])
   const [subtasks, setSubtasks] = useState({})
   const [showStartModal, setShowStartModal] = useState(false)
+  const [showBreakModal, setShowBreakModal] = useState(false)
+  const [sessionSummary, setSessionSummary] = useState(null)
+  const [showSummaryModal, setShowSummaryModal] = useState(false)
+  const [fadeOutBreak, setFadeOutBreak] = useState(false)
+  const [timerPaused, setTimerPaused] = useState(false)
 
-  
+  const totalStudyTime = useRef(0)
 
-  // Load today's tasks + subtasks
+  // 🧠 Load today's tasks and subtasks
   const loadTodayTasks = useCallback(async () => {
     if (!user) return
     const today = new Date().toISOString().split('T')[0]
+
     const { data: tasksData, error: taskError } = await supabase
       .from('tasks')
       .select('*')
@@ -37,7 +45,7 @@ export default function FocusSession({ user }) {
         .select('*')
         .in('task_id', taskIds)
 
-      if (!subError) {
+      if (!subError && subs) {
         const grouped = subs.reduce((acc, s) => {
           acc[s.task_id] = acc[s.task_id] ? [...acc[s.task_id], s] : [s]
           return acc
@@ -53,6 +61,7 @@ export default function FocusSession({ user }) {
     loadTodayTasks()
   }, [loadTodayTasks])
 
+  // 🧭 Mode change
   function onModeChange(m) {
     setMode(m)
     if (m === 'pomodoro') {
@@ -67,30 +76,85 @@ export default function FocusSession({ user }) {
     }
   }
 
+  // ⏱️ Format duration nicely (e.g., 1 hr 15 min)
+  function formatDuration(minutes) {
+    const hrs = Math.floor(minutes / 60)
+    const mins = Math.round(minutes % 60)
+    if (hrs > 0 && mins > 0) return `${hrs} hr${hrs > 1 ? 's' : ''} ${mins} min`
+    if (hrs > 0) return `${hrs} hr${hrs > 1 ? 's' : ''}`
+    return `${mins} min${mins !== 1 ? 's' : ''}`
+  }
+
+  // 🕒 When a timer finishes
   async function handleComplete() {
+    if (!user?.id) return
+    const sessionType = isBreak ? 'break' : 'study'
+    const duration = isBreak ? breakDuration : studyDuration
+
+    if (!isBreak) totalStudyTime.current += duration
+
     try {
       await supabase.from('sessions').insert({
         user_id: user.id,
-        duration_minutes: isBreak ? breakDuration : studyDuration,
-        type: isBreak ? 'break' : 'study'
+        duration_minutes: duration,
+        type: sessionType,
+        created_at: new Date().toISOString(),
       })
     } catch (err) {
-      console.error(err)
+      console.error('❌ Error saving session:', err)
     }
 
     if (!isBreak) {
-      const newCycle = cycleCount + 1
-      setCycleCount(newCycle)
-      if (newCycle % 4 === 0) {
-        setBreakDuration(30)
-      } else {
-        setBreakDuration(mode === 'pomodoro' ? 5 : breakDuration)
-      }
+      // Study done → short break modal
+      setTimerPaused(true)
+      setShowBreakModal(true)
+      setFadeOutBreak(false)
+      setTimeout(() => setFadeOutBreak(true), 8000)
+      setTimeout(() => {
+        setShowBreakModal(false)
+        setIsBreak(true)
+        setCycleCount(prev => prev + 1)
+        setTimerPaused(false)
+      }, 10000)
+    } else {
+      // Break done → back to study
+      setIsBreak(false)
     }
-    setIsBreak(!isBreak)
   }
 
-  // Toggle task/subtask completion
+  // 🎯 End session manually
+  function endSession() {
+    console.log('📘 Ending session...')
+
+    // 🎉 Confetti burst first
+    const duration = 1000
+    const end = Date.now() + duration
+    const colors = ['#a78bfa', '#fbcfe8', '#c084fc']
+
+    ;(function frame() {
+      confetti({
+        particleCount: 40,
+        startVelocity: 25,
+        spread: 70,
+        ticks: 60,
+        origin: { x: Math.random(), y: Math.random() - 0.2 },
+        colors,
+      })
+      if (Date.now() < end) requestAnimationFrame(frame)
+    })()
+
+    // Wait for confetti → then exit fullscreen and show summary
+    setTimeout(() => {
+      setIsSessionActive(false)
+      setSessionSummary({
+        totalStudyTime: totalStudyTime.current,
+        completedTasks: todayTasks.filter(t => t.is_done).length,
+      })
+      setShowSummaryModal(true)
+    }, 1200)
+  }
+
+  // ✅ Task toggle helpers
   async function toggleTaskDone(id, done) {
     await supabase.from('tasks').update({ is_done: !done }).eq('id', id)
     setTodayTasks(prev =>
@@ -111,89 +175,112 @@ export default function FocusSession({ user }) {
     })
   }
 
+  // ☕ Break Modal
+  const BreakModal = () =>
+    showBreakModal ? (
+      <div className="break-modal-overlay">
+        <div className={`break-modal-card ${fadeOutBreak ? 'fade-out' : ''}`}>
+          <h3>☕ Break Starting!</h3>
+          <img src="/images/tako_break.png" alt="Tako mascot" />
+          <p>Take a short break! Session will resume shortly...</p>
+        </div>
+      </div>
+    ) : null
+
+  // 🎯 Session Summary Modal
+  const SummaryModal = () =>
+    showSummaryModal && sessionSummary ? (
+      <div className="summary-overlay" onClick={() => setShowSummaryModal(false)}>
+        <div className="summary-card" onClick={e => e.stopPropagation()}>
+          <h3>🎯 Session Summary</h3>
+          <img src={takoProud} alt="Tako mascot" className="tako-img" />
+          <p>
+            Total Study Time:{' '}
+            <strong>{formatDuration(sessionSummary.totalStudyTime)}</strong>
+          </p>
+          <p>
+            {sessionSummary.completedTasks > 0
+              ? `✅ ${sessionSummary.completedTasks} tasks completed!`
+              : 'No tasks marked complete this time.'}
+          </p>
+          <button
+            className="btn close-btn"
+            onClick={() => setShowSummaryModal(false)}
+          >
+            Close
+          </button>
+        </div>
+      </div>
+    ) : null
+
+  // 🎬 Component Layout
   return (
     <div className={`focus-container ${isSessionActive ? 'fullscreen' : ''}`}>
-  {isSessionActive ? (
-  <div className="fullscreen-session fade-in">
-    <div className="timer-fullscreen-card">
-      {/* Floating mascot switches depending on isBreak */}
-      <FloatingMascot mode={isBreak ? 'break' : 'study'} />
-
-      <Timer
-        key={`${isBreak ? 'break' : 'study'}-${cycleCount}-${mode}`}
-        initialMinutes={isBreak ? breakDuration : studyDuration}
-        onComplete={handleComplete}
-        mode={isBreak ? 'break' : 'study'}
-        autoStart
-      />
-
-      <ExitButton onExit={() => setIsSessionActive(false)} />
-    </div>
-
-    <div className="floating-task-card">
-      <h4>Today's Tasks</h4>
-      {todayTasks.length > 0 ? (
-        todayTasks.map(task => (
-          <div key={task.id} className="task-mini">
-            <label>
-              <input
-                type="checkbox"
-                checked={task.is_done}
-                onChange={() => toggleTaskDone(task.id, task.is_done)}
+      {/* FULLSCREEN SESSION VIEW */}
+      {isSessionActive ? (
+        <div className="fullscreen-session fade-in">
+          <div className="timer-fullscreen-card">
+            <FloatingMascot mode={isBreak ? 'break' : 'study'} />
+            {!timerPaused && (
+              <Timer
+                key={`${isBreak ? 'break' : 'study'}-${cycleCount}-${mode}`}
+                initialMinutes={isBreak ? breakDuration : studyDuration}
+                onComplete={handleComplete}
+                mode={isBreak ? 'break' : 'study'}
+                autoStart
               />
-              {task.title}
-            </label>
-            {task.notes && <p className="task-notes-mini">{task.notes}</p>}
-            {subtasks[task.id]?.map(st => (
-              <div key={st.id} className="subtask-mini">
-                <input
-                  type="checkbox"
-                  checked={st.is_done}
-                  onChange={() => toggleSubtaskDone(st.id, st.is_done)}
-                />
-                {st.title}
-              </div>
-            ))}
+            )}
+            <ExitButton onExit={endSession} />
           </div>
-        ))
-      ) : (
-        <p>No tasks for today 🎉</p>
-      )}
-    </div>
-  </div>
-) : (
-  // your normal mode view stays the same below...
 
-    // Normal (non-fullscreen) layout
-    <div className="focus-grid">
-      <div className="focus-left">
-        <h2>Focus Session</h2>
-        <div className="card focus-card">
+          <div className="floating-task-card">
+            <h4>Today's Tasks</h4>
+            {todayTasks.length > 0 ? (
+              todayTasks.map(task => (
+                <div key={task.id} className="task-mini">
+                  <label>
+                    <input
+                      type="checkbox"
+                      checked={task.is_done}
+                      onChange={() => toggleTaskDone(task.id, task.is_done)}
+                    />
+                    {task.title}
+                  </label>
+                  {subtasks[task.id]?.map(st => (
+                    <div key={st.id} className="subtask-mini">
+                      <input
+                        type="checkbox"
+                        checked={st.is_done}
+                        onChange={() => toggleSubtaskDone(st.id, st.is_done)}
+                      />
+                      {st.title}
+                    </div>
+                  ))}
+                </div>
+              ))
+            ) : (
+              <p>No tasks for today 🎉</p>
+            )}
+          </div>
+
+          <BreakModal />
+        </div>
+      ) : (
+        /* NORMAL DASHBOARD VIEW */
+        <div className="focus-grid">
+          <div className="focus-left">
+            <h2>Focus Session</h2>
+            <div className="card focus-card">
               <div className="mode-select">
-                <button
-                  className={`btn ${mode === 'pomodoro' ? '' : 'secondary'}`}
-                  onClick={() => onModeChange('pomodoro')}
-                >
-                  Pomodoro (25/5)
-                </button>
-                <button
-                  className={`btn ${mode === '50-10' ? '' : 'secondary'}`}
-                  onClick={() => onModeChange('50-10')}
-                >
-                  50 / 10
-                </button>
-                <button
-                  className={`btn ${mode === '52-17' ? '' : 'secondary'}`}
-                  onClick={() => onModeChange('52-17')}
-                >
-                  52 / 17
-                </button>
-                <button
-                  className={`btn ${mode === 'custom' ? '' : 'secondary'}`}
-                  onClick={() => setMode('custom')}
-                >
-                  Custom
-                </button>
+                {['pomodoro', '50-10', '52-17', 'custom'].map(opt => (
+                  <button
+                    key={opt}
+                    className={`btn ${mode === opt ? '' : 'secondary'}`}
+                    onClick={() => onModeChange(opt)}
+                  >
+                    {opt === 'pomodoro' ? 'Pomodoro (25/5)' : opt.replace('-', ' / ')}
+                  </button>
+                ))}
               </div>
 
               {mode === 'custom' && (
@@ -205,9 +292,7 @@ export default function FocusSession({ user }) {
                       min="5"
                       value={studyDuration}
                       onChange={e =>
-                        setStudyDuration(
-                          Math.max(5, parseInt(e.target.value) || 5)
-                        )
+                        setStudyDuration(Math.max(1, parseInt(e.target.value) || 1))
                       }
                     />
                   </label>
@@ -225,48 +310,57 @@ export default function FocusSession({ user }) {
               )}
 
               <Timer
-  key={`${isBreak ? 'break' : 'study'}-${cycleCount}-${mode}`}
-  initialMinutes={isBreak ? breakDuration : studyDuration}
-  onComplete={handleComplete}
-  mode={isBreak ? 'break' : 'study'}
-/>
+                key={`${isBreak ? 'break' : 'study'}-${cycleCount}-${mode}`}
+                initialMinutes={isBreak ? breakDuration : studyDuration}
+                onComplete={handleComplete}
+                mode={isBreak ? 'break' : 'study'}
+              />
+
               <div className="session-controls">
-  <button
-    className="btn start-btn"
-    onClick={() => setShowStartModal(true)}
-  >
-    Start Session
-  </button>
-</div>
-{/* Confirmation modal */}
-{showStartModal && (
-  <div className="start-modal-overlay">
-    <div className="start-modal fade-in">
-      <h3>Start Focus Session?</h3>
-      <p>Are you ready to enter focus mode?</p>
-      <div className="modal-actions">
-        <button
-          className="btn confirm-btn"
-          onClick={() => {
-            setShowStartModal(false)
-            setIsSessionActive(true)
-          }}
-        >
-          Yes, start
-        </button>
-        <button
-          className="btn secondary cancel-btn"
-          onClick={() => setShowStartModal(false)}
-        >
-          Cancel
-        </button>
-      </div>
-    </div>
-  </div>
-)}
+                <button
+                  className="btn start-btn"
+                  onClick={() => setShowStartModal(true)}
+                >
+                  Start Session
+                </button>
+              </div>
+
+              {/* Start Modal */}
+              {showStartModal && (
+                <div className="start-modal-overlay">
+                  <div className="start-modal fade-in">
+                    <h3>Start Focus Session?</h3>
+                    <p>Are you ready to enter focus mode?</p>
+                    <div className="modal-actions">
+                      <button
+                        className="btn confirm-btn"
+                        onClick={() => {
+                          setShowStartModal(false)
+                          setIsSessionActive(true)
+                          // reset state
+                          setSessionSummary(null)
+                          setShowSummaryModal(false)
+                          totalStudyTime.current = 0
+                          setCycleCount(0)
+                          setIsBreak(false)
+                        }}
+                      >
+                        Yes, start
+                      </button>
+                      <button
+                        className="btn secondary cancel-btn"
+                        onClick={() => setShowStartModal(false)}
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 
+          {/* Task list panel */}
           <div className="focus-right">
             <div className="card task-card">
               <h3>Today's Tasks</h3>
@@ -281,9 +375,6 @@ export default function FocusSession({ user }) {
                       />
                       {task.title}
                     </label>
-                    {task.notes && (
-                      <p className="task-notes-mini">{task.notes}</p>
-                    )}
                     {subtasks[task.id]?.map(st => (
                       <div key={st.id} className="subtask-mini">
                         <input
@@ -303,6 +394,9 @@ export default function FocusSession({ user }) {
           </div>
         </div>
       )}
+
+      {/* ✅ Keep Summary Modal always mounted */}
+      <SummaryModal />
     </div>
   )
 }

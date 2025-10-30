@@ -205,14 +205,14 @@ async function saveSubtasks() {
           <div className="card recent-sessions-card">
             <h3>Recent Sessions</h3>
             <ul className="session-list">
-              {sessions.slice(0, 6).map(s => (
+            {sessions.slice(0, 6).map(s => (
                 <li key={s.id} className="session-item">
-                  <div className="session-row">
+                <div className="session-row">
                     <div>{s.task_id ? `Task: ${s.task_id}` : 'General focus'}</div>
                     <div className="session-duration">{s.duration_minutes} min</div>
-                  </div>
+                </div>
                 </li>
-              ))}
+            ))}
             </ul>
           </div>
         </div>
@@ -245,7 +245,7 @@ async function saveSubtasks() {
         </div>
       ) : (
         <>
-          <h3>🧠 New Task Created</h3>
+          <h3>New Task Created</h3>
           <h4 className="modal-task-title">{newTask.title}</h4>
           <div className="modal-subtasks">
             {newTask.subtasks.map((sub, i) => (

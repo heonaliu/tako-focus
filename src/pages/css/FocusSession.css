@@ -398,3 +398,311 @@
   from { opacity: 0; transform: scale(0.97); }
   to { opacity: 1; transform: scale(1); }
 }
+
+/* 🎉 Session Summary Modal */
+.summary-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1200;
+  animation: fadeIn 0.25s ease-in;
+  backdrop-filter: blur(3px);
+}
+
+.summary-card {
+  background: #fff;
+  padding: 2rem;
+  border-radius: 1.5rem;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+  text-align: center;
+  max-width: 340px;
+  width: 90%;
+  animation: popUp 0.3s ease-in-out;
+}
+
+.summary-card h3 {
+  font-size: 1.5rem;
+  color: #333;
+  margin-bottom: 0.75rem;
+}
+
+.summary-card p {
+  color: #555;
+  margin: 0.4rem 0;
+  font-size: 1rem;
+}
+
+.summary-card strong {
+  color: #222;
+}
+
+.summary-card .btn {
+  margin-top: 1.2rem;
+  padding: 0.6rem 1.3rem;
+  border: none;
+  border-radius: 0.6rem;
+  background-color: #6c63ff;
+  color: #fff;
+  cursor: pointer;
+  font-weight: 600;
+  transition: background-color 0.2s ease;
+}
+
+.summary-card .btn:hover {
+  background-color: #584de0;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes popUp {
+  from {
+    transform: scale(0.9);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+
+/* ☕ Break Modal Animation */
+.summary-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(10, 10, 20, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: fadeIn 0.4s ease forwards;
+  z-index: 9999;
+}
+
+.summary-card {
+  background: #fdfaff;
+  padding: 2rem 3rem;
+  border-radius: 20px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
+  text-align: center;
+  animation: fadeUp 0.5s ease forwards;
+  max-width: 400px;
+}
+
+.summary-card.fade-out {
+  animation: fadeOut 0.8s ease forwards;
+}
+
+.tako-img {
+  width: 120px;
+  margin: 1rem auto;
+  display: block;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes fadeOut {
+  from { opacity: 1; transform: translateY(0); }
+  to { opacity: 0; transform: translateY(-10px); }
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(30px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* 🎓 Session Summary Modal */
+.session-summary-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(10, 10, 20, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: fadeIn 0.4s ease forwards;
+  z-index: 9999;
+}
+
+.session-summary-card {
+  background: #ffffff;
+  border-radius: 20px;
+  padding: 2rem 3rem;
+  text-align: center;
+  max-width: 420px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.25);
+  animation: fadeUp 0.5s ease forwards;
+}
+
+.session-summary-card.fade-out {
+  animation: fadeOut 0.8s ease forwards;
+}
+
+.session-summary-card img {
+  width: 100px;
+  margin-bottom: 1rem;
+}
+
+
+/* === FocusSession.css Enhancements === */
+
+/* General container setup */
+.focus-session-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  position: relative;
+}
+
+.focus-session-card {
+  background: var(--card-bg, #fff);
+  border-radius: 16px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+  padding: 2rem;
+  text-align: center;
+  position: relative;
+  width: 350px;
+  transition: all 0.3s ease;
+}
+
+.mascot-img {
+  width: 120px;
+  height: auto;
+  margin-bottom: 1rem;
+}
+
+/* === Break Modal === */
+.break-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.4);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1200;
+  backdrop-filter: blur(3px);
+  animation: fadeIn 0.3s ease forwards;
+}
+
+.break-modal-card {
+  background: white;
+  padding: 2rem;
+  border-radius: 20px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+  text-align: center;
+  animation: popIn 0.4s ease forwards;
+}
+
+.break-modal-card img {
+  width: 100px;
+  margin-bottom: 1rem;
+}
+
+.break-modal-card.fade-out {
+  animation: fadeOut 2s ease forwards;
+}
+
+/* === Session Summary Modal === */
+.session-summary-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.45);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1300;
+  backdrop-filter: blur(4px);
+  animation: fadeIn 0.3s ease forwards;
+}
+
+.session-summary-card {
+  background: linear-gradient(145deg, #ffffff, #f0f0f0);
+  border-radius: 20px;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.15);
+  padding: 2rem 3rem;
+  text-align: center;
+  animation: popIn 0.4s ease forwards;
+}
+
+.session-summary-card img {
+  width: 110px;
+  height: auto;
+  margin-bottom: 1rem;
+}
+
+.session-summary-card.fade-out {
+  animation: fadeOut 2s ease forwards;
+}
+
+/* === Buttons === */
+.btn {
+  background: var(--primary, #6c63ff);
+  border: none;
+  color: #fff;
+  padding: 0.75rem 1.25rem;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+.btn:hover {
+  background: var(--primary-dark, #5753d7);
+}
+
+.btn.end-btn {
+  background: #ff6961;
+}
+
+.btn.end-btn:hover {
+  background: #e05952;
+}
+
+/* === Animations === */
+@keyframes fadeIn {
+  from { opacity: 0 }
+  to { opacity: 1 }
+}
+
+@keyframes fadeOut {
+  from { opacity: 1 }
+  to { opacity: 0 }
+}
+
+@keyframes popIn {
+  0% { transform: scale(0.9); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+/* === Timer + Layout === */
+.session-controls {
+  margin-top: 1.5rem;
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+}
+
+canvas {
+  position: fixed;
+  pointer-events: none;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 999;
+}
