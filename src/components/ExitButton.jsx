@@ -1,73 +1,72 @@
-import React, { useState, useRef, useEffect } from 'react'
+import React, { useRef, useState, useEffect } from 'react'
 import './css/ExitButton.css'
 import takoFocused from '../assets/tako_idle.png'
 
-export default function ExitButton({ onConfirmExit }) {
+export default function ExitButton({ onExit }) {
+  const holdDuration = 3000 // 3 seconds
   const [progress, setProgress] = useState(0)
-  const holdRef = useRef(null)
-  const HOLD_DURATION = 3000 // 3 seconds
-
-  const radius = 36
-  const circumference = 2 * Math.PI * radius
+  const [holding, setHolding] = useState(false)
+  const [pulse, setPulse] = useState(false)
+  const holdStartRef = useRef(null)
+  const intervalRef = useRef(null)
 
   const startHold = () => {
-    const startTime = Date.now()
-    holdRef.current = setInterval(() => {
-      const elapsed = Date.now() - startTime
-      const pct = Math.min(elapsed / HOLD_DURATION, 1)
-      setProgress(pct)
-      if (pct >= 1) {
-        clearInterval(holdRef.current)
-        onConfirmExit?.()
+    if (holding) return
+    setHolding(true)
+    holdStartRef.current = Date.now()
+
+    intervalRef.current = setInterval(() => {
+      const elapsed = Date.now() - holdStartRef.current
+      const newProgress = Math.min((elapsed / holdDuration) * 100, 100)
+      setProgress(newProgress)
+
+      if (newProgress >= 100) {
+        clearInterval(intervalRef.current)
+        setHolding(false)
+
+        // ✅ Subtle vibration & glow pulse
+        if (navigator.vibrate) navigator.vibrate(60)
+        setPulse(true)
+        setTimeout(() => setPulse(false), 400)
+
+        onExit?.()
       }
-    }, 20)
+    }, 30)
   }
 
-  const stopHold = () => {
-    clearInterval(holdRef.current)
+  const cancelHold = () => {
+    clearInterval(intervalRef.current)
+    setHolding(false)
     setProgress(0)
   }
 
-  // Cleanup safety
-  useEffect(() => () => clearInterval(holdRef.current), [])
-
-  const offset = circumference - progress * circumference
+  useEffect(() => {
+    return () => clearInterval(intervalRef.current)
+  }, [])
 
   return (
     <div className="exit-button-container">
       <div
-        className="exit-button"
+        className={`exit-button ${pulse ? 'pulse' : ''}`}
         onMouseDown={startHold}
-        onMouseUp={stopHold}
-        onMouseLeave={stopHold}
+        onMouseUp={cancelHold}
+        onMouseLeave={cancelHold}
         onTouchStart={startHold}
-        onTouchEnd={stopHold}
+        onTouchEnd={cancelHold}
       >
-        <svg className="progress-ring" width="80" height="80">
-          <circle
-            className="progress-ring-bg"
-            stroke="#333"
-            strokeWidth="5"
-            fill="transparent"
-            r={radius}
-            cx="40"
-            cy="40"
-          />
-          <circle
-            className="progress-ring-progress"
-            stroke="var(--purple-light)"
-            strokeWidth="5"
-            fill="transparent"
-            r={radius}
-            cx="40"
-            cy="40"
-            strokeDasharray={circumference}
-            strokeDashoffset={offset}
-          />
-        </svg>
-        <img src={takoFocused} alt="Tako Focused" className="exit-icon" />
+        <div
+          className="exit-progress-ring"
+          style={{
+            background: `conic-gradient(
+              #34D399 ${progress * 3.6}deg,
+              rgba(255,255,255,0.1) ${progress * 3.6}deg
+            )`
+          }}
+        >
+          <img src={takoFocused} alt="Exit" className="exit-icon" />
+        </div>
       </div>
-      <p className="exit-hint">Hold to end session</p>
+      <p className="exit-text">Hold to end session</p>
     </div>
   )
 }

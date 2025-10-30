@@ -3,6 +3,7 @@ import Timer from '../components/Timer'
 import ExitButton from '../components/ExitButton'
 import { supabase } from '../supabaseClient'
 import './css/FocusSession.css'
+import FloatingMascot from '../components/FloatingMascot'
 
 export default function FocusSession({ user }) {
   const [mode, setMode] = useState('pomodoro')
@@ -109,61 +110,66 @@ export default function FocusSession({ user }) {
 
   return (
     <div className={`focus-container ${isSessionActive ? 'fullscreen' : ''}`}>
-      {isSessionActive ? (
-        <div className="fullscreen-session fade-in">
-          <div className="timer-fullscreen-card">
-            <Timer
-              key={`${isBreak ? 'break' : 'study'}-${cycleCount}-${mode}`}
-              initialMinutes={isBreak ? breakDuration : studyDuration}
-              onComplete={handleComplete}
-              mode={isBreak ? 'break' : 'study'}
-              autoStart
-            />
-          </div>
+  {isSessionActive ? (
+    <div className="fullscreen-session fade-in">
+      <div className="timer-fullscreen-card">
 
-          <div className="floating-task-card">
-            <h4>Today's Tasks</h4>
-            {todayTasks.length > 0 ? (
-              todayTasks.map(task => (
-                <div key={task.id} className="task-mini">
-                  <label>
-                    <input
-                      type="checkbox"
-                      checked={task.is_done}
-                      onChange={() => toggleTaskDone(task.id, task.is_done)}
-                    />
-                    {task.title}
-                  </label>
-                  {task.notes && (
-                    <p className="task-notes-mini">{task.notes}</p>
-                  )}
-                  {subtasks[task.id]?.map(st => (
-                    <div key={st.id} className="subtask-mini">
-                      <input
-                        type="checkbox"
-                        checked={st.is_done}
-                        onChange={() => toggleSubtaskDone(st.id, st.is_done)}
-                      />
-                      {st.title}
-                    </div>
-                  ))}
+        {/* 🐙 Floating Mascot above Timer */}
+        <FloatingMascot isBreak={isBreak} />
+
+        {/* ⏱️ Timer */}
+        <Timer
+          key={`${isBreak ? 'break' : 'study'}-${cycleCount}-${mode}`}
+          initialMinutes={isBreak ? breakDuration : studyDuration}
+          onComplete={handleComplete}
+          mode={isBreak ? 'break' : 'study'}
+          autoStart
+        />
+
+        {/* 🟣 Exit Button */}
+        <ExitButton onExit={() => setIsSessionActive(false)} />
+      </div>
+
+      {/* ✅ Floating Tasks Sidebar */}
+      <div className="floating-task-card">
+        <h4>Today's Tasks</h4>
+        {todayTasks.length > 0 ? (
+          todayTasks.map(task => (
+            <div key={task.id} className="task-mini">
+              <label>
+                <input
+                  type="checkbox"
+                  checked={task.is_done}
+                  onChange={() => toggleTaskDone(task.id, task.is_done)}
+                />
+                {task.title}
+              </label>
+              {task.notes && (
+                <p className="task-notes-mini">{task.notes}</p>
+              )}
+              {subtasks[task.id]?.map(st => (
+                <div key={st.id} className="subtask-mini">
+                  <input
+                    type="checkbox"
+                    checked={st.is_done}
+                    onChange={() => toggleSubtaskDone(st.id, st.is_done)}
+                  />
+                  {st.title}
                 </div>
-              ))
-            ) : (
-              <p>No tasks for today 🎉</p>
-            )}
-          </div>
-
-          {/* 👇 Exit Button Integration */}
-          <div className="exit-button-wrapper">
-            <ExitButton onConfirmExit={() => setIsSessionActive(false)} />
-          </div>
-        </div>
-      ) : (
-        <div className="focus-grid">
-          <div className="focus-left">
-            <h2>Focus Session</h2>
-            <div className="card focus-card">
+              ))}
+            </div>
+          ))
+        ) : (
+          <p>No tasks for today 🎉</p>
+        )}
+      </div>
+    </div>
+  ) : (
+    // Normal (non-fullscreen) layout
+    <div className="focus-grid">
+      <div className="focus-left">
+        <h2>Focus Session</h2>
+        <div className="card focus-card">
               <div className="mode-select">
                 <button
                   className={`btn ${mode === 'pomodoro' ? '' : 'secondary'}`}

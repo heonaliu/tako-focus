@@ -1,0 +1,27 @@
+.floating-mascot {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  animation: floatUpDown 3s ease-in-out infinite;
+}
+
+.mascot-img {
+  width: 90px;
+  height: 90px;
+  object-fit: contain;
+  background: transparent !important;
+  border: none;
+  box-shadow: none;
+  user-select: none;
+  pointer-events: none;
+}
+
+@keyframes floatUpDown {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
