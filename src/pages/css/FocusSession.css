@@ -191,3 +191,41 @@
   border-width: 0 2px 2px 0;
   transform: rotate(45deg);
 }
+
+.custom-inputs {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin: 0.8rem 0;
+}
+
+.custom-inputs input {
+  width: 60px;
+  padding: 4px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+}
+
+.timer-status {
+  margin-top: 0.6rem;
+  font-weight: 500;
+  color: #9333ea;
+  text-align: center;
+}
+
+/* Remove number input arrows */
+.custom-inputs input[type="number"] {
+  -moz-appearance: textfield; /* Firefox */
+  appearance: textfield; /* Modern browsers */
+  width: 70px;
+  padding: 4px 6px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  text-align: center;
+}
+
+.custom-inputs input[type="number"]::-webkit-outer-spin-button,
+.custom-inputs input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}

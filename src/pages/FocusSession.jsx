@@ -5,17 +5,69 @@ import './css/FocusSession.css';
 
 export default function FocusSession({ user }) {
   const [mode, setMode] = useState('pomodoro');
-  const [duration, setDuration] = useState(25);
+  const [studyDuration, setStudyDuration] = useState(25);
+  const [breakDuration, setBreakDuration] = useState(5);
+  const [cycleCount, setCycleCount] = useState(0);
+  const [isBreak, setIsBreak] = useState(false);
   const [tasks, setTasks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [customStudy, setCustomStudy] = useState(30);
+  const [customBreak, setCustomBreak] = useState(10);
 
+  // --- Handle mode switching ---
   function onModeChange(m) {
     setMode(m);
-    if (m === 'pomodoro') setDuration(25);
-    if (m === '50-10') setDuration(50);
+    setCycleCount(0);
+    setIsBreak(false);
+
+    if (m === 'pomodoro') {
+      setStudyDuration(25);
+      setBreakDuration(5);
+    } else if (m === '50-10') {
+      setStudyDuration(50);
+      setBreakDuration(10);
+    } else if (m === '52-17') {
+      setStudyDuration(52);
+      setBreakDuration(17);
+    } else if (m === 'custom') {
+      setStudyDuration(customStudy);
+      setBreakDuration(customBreak);
+    }
   }
 
+  // --- Handle Timer completion ---
+  async function handleComplete() {
+    try {
+      await supabase.from('sessions').insert({
+        user_id: user.id,
+        duration_minutes: isBreak ? breakDuration : studyDuration,
+        is_break: isBreak,
+        mode: mode,
+      });
+
+      if (!isBreak) {
+        const newCycle = cycleCount + 1;
+        setCycleCount(newCycle);
+
+        if (mode === 'pomodoro' && newCycle % 4 === 0) {
+          setIsBreak(true);
+          setBreakDuration(30); // long break every 4 pomodoros
+        } else {
+          setIsBreak(true);
+          setBreakDuration(mode === 'pomodoro' ? 5 : breakDuration);
+        }
+      } else {
+        setIsBreak(false);
+      }
+
+      alert(isBreak ? 'Break over — back to focus! 💪' : 'Great work! Time for a break 🌿');
+    } catch (err) {
+      console.error('Error saving session:', err);
+    }
+  }
+
+  // --- Load today's tasks ---
   async function loadTodayTasks() {
     setLoading(true);
     try {
@@ -83,19 +135,6 @@ export default function FocusSession({ user }) {
     }
   }
 
-  async function handleComplete() {
-    try {
-      await supabase.from('sessions').insert({
-        user_id: user.id,
-        duration_minutes: duration,
-      });
-      alert('Session saved! Great work 🌟');
-    } catch (err) {
-      console.error(err);
-      alert('Failed to save session.');
-    }
-  }
-
   return (
     <div className="focus-container">
       <div className="focus-grid">
@@ -108,7 +147,7 @@ export default function FocusSession({ user }) {
                 className={`btn ${mode === 'pomodoro' ? '' : 'secondary'}`}
                 onClick={() => onModeChange('pomodoro')}
               >
-                Pomodoro (25/5)
+                Pomodoro 25 / 5
               </button>
               <button
                 className={`btn ${mode === '50-10' ? '' : 'secondary'}`}
@@ -116,22 +155,59 @@ export default function FocusSession({ user }) {
               >
                 50 / 10
               </button>
-              <select
-                className="duration-select"
-                value={duration}
-                onChange={e => setDuration(Number(e.target.value))}
+              <button
+                className={`btn ${mode === '52-17' ? '' : 'secondary'}`}
+                onClick={() => onModeChange('52-17')}
               >
-                <option value={25}>25</option>
-                <option value={45}>45</option>
-                <option value={50}>50</option>
-              </select>
+                52 / 17
+              </button>
+              <button
+                className={`btn ${mode === 'custom' ? '' : 'secondary'}`}
+                onClick={() => onModeChange('custom')}
+              >
+                Custom
+              </button>
             </div>
 
+            {mode === 'custom' && (
+              <div className="custom-inputs">
+                <label>
+                  Study (min):{' '}
+                  <input
+                    type="number"
+                    value={customStudy}
+                    min={5}
+                    onChange={e =>
+                      setCustomStudy(Math.max(5, Number(e.target.value)))
+                    }
+                  />
+                </label>
+                <label>
+                  Break (min):{' '}
+                  <input
+                    type="number"
+                    value={customBreak}
+                    min={1}
+                    onChange={e =>
+                      setCustomBreak(Math.max(1, Number(e.target.value)))
+                    }
+                  />
+                </label>
+                <button className="btn small-btn" onClick={() => onModeChange('custom')}>
+                  Set
+                </button>
+              </div>
+            )}
+
             <Timer
-              initialMinutes={duration}
+              key={`${isBreak ? 'break' : 'study'}-${cycleCount}-${mode}`}
+              initialMinutes={isBreak ? breakDuration : studyDuration}
               onComplete={handleComplete}
               className="timer-display"
             />
+            <p className="timer-status">
+              {isBreak ? 'Break Time 🌿' : 'Focus Time 🔥'} — Cycle {cycleCount % 4 || 1}
+            </p>
           </div>
         </div>
 
