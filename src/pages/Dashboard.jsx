@@ -2,14 +2,17 @@ import React, { useEffect, useState } from 'react'
 import { supabase } from '../supabaseClient'
 import './css/Dashboard.css'
 import takoProud from '../assets/tako_proud.png'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faTrash } from '@fortawesome/free-solid-svg-icons'
 
 export default function Dashboard({ user }) {
   const [sessions, setSessions] = useState([])
   const [totalMinutes, setTotalMinutes] = useState(0)
   const [focusGoal, setFocusGoal] = useState('')
   const [loadingPlan, setLoadingPlan] = useState(false)
-  const [generatedPlan, setGeneratedPlan] = useState([])
   const [streakCount, setStreakCount] = useState(0)
+  const [modalOpen, setModalOpen] = useState(false)
+  const [newTask, setNewTask] = useState(null)
 
   useEffect(() => {
     if (!user) return
@@ -19,11 +22,11 @@ export default function Dashboard({ user }) {
         .select('*')
         .eq('user_id', user.id)
         .order('created_at', { ascending: false })
+
       setSessions(data || [])
       const total = (data || []).reduce((s, cur) => s + (cur.duration_minutes || 0), 0)
       setTotalMinutes(total)
 
-      // calculate streak (sessions done on consecutive days)
       if (data && data.length > 0) {
         const dates = [...new Set(data.map(d => d.created_at.split('T')[0]))]
         dates.sort((a, b) => new Date(b) - new Date(a))
@@ -61,25 +64,79 @@ export default function Dashboard({ user }) {
           title: focusGoal,
           due_date: new Date().toISOString().split('T')[0],
         })
-        .select()
+        .select('*')
         .single()
+
       if (taskError) throw taskError
 
-      const subs = mockSteps.map((s) => ({
+      const subs = mockSteps.map(s => ({
         user_id: user.id,
         task_id: taskData.id,
         title: s,
       }))
-      const { error: subError } = await supabase.from('subtasks').insert(subs)
+
+      const { data: subData, error: subError } = await supabase
+        .from('subtasks')
+        .insert(subs)
+        .select('*')
+
       if (subError) throw subError
 
-      setGeneratedPlan(mockSteps)
+      setNewTask({
+        id: taskData?.id || Date.now(),
+        title: focusGoal,
+        subtasks: subData?.map(s => s.title) || mockSteps,
+      })
+
+      setModalOpen(true)
       setFocusGoal('')
     } catch (err) {
       console.error('Error generating plan:', err)
+      setNewTask({
+        id: Date.now(),
+        title: focusGoal,
+        subtasks: [
+          'Step 1: Brainstorm',
+          'Step 2: Outline your process',
+          'Step 3: Execute for 25 min',
+        ],
+      })
+      setModalOpen(true)
     } finally {
       setLoadingPlan(false)
     }
+  }
+
+  function handleSubtaskChange(index, value) {
+    setNewTask(prev => {
+      const updated = { ...prev }
+      updated.subtasks[index] = value
+      return updated
+    })
+  }
+
+  function addSubtask() {
+    // Adds a completely blank subtask
+    setNewTask(prev => ({
+      ...prev,
+      subtasks: [...prev.subtasks, ''],
+    }))
+  }
+
+  function removeSubtask(index) {
+    setNewTask(prev => ({
+      ...prev,
+      subtasks: prev.subtasks.filter((_, i) => i !== index),
+    }))
+  }
+
+  function saveSubtasks() {
+    console.log('Saved subtasks:', newTask)
+    setModalOpen(false)
+  }
+
+  function startFocusSession() {
+    window.location.href = '/focus'
   }
 
   return (
@@ -94,7 +151,7 @@ export default function Dashboard({ user }) {
           className="focus-input"
           placeholder="e.g., Write essay draft, prepare for exam..."
           value={focusGoal}
-          onChange={(e) => setFocusGoal(e.target.value)}
+          onChange={e => setFocusGoal(e.target.value)}
         />
         <button
           className="btn generate-btn"
@@ -103,17 +160,6 @@ export default function Dashboard({ user }) {
         >
           {loadingPlan ? 'Generating...' : 'Generate Plan'}
         </button>
-
-        {generatedPlan.length > 0 && (
-          <div className="generated-plan">
-            <h4>Suggested Breakdown:</h4>
-            <ul>
-              {generatedPlan.map((step, i) => (
-                <li key={i}>{step}</li>
-              ))}
-            </ul>
-          </div>
-        )}
       </div>
 
       {/* Dashboard Grid */}
@@ -128,7 +174,7 @@ export default function Dashboard({ user }) {
           <div className="card recent-sessions-card">
             <h3>Recent Sessions</h3>
             <ul className="session-list">
-              {sessions.slice(0, 6).map((s) => (
+              {sessions.slice(0, 6).map(s => (
                 <li key={s.id} className="session-item">
                   <div className="session-row">
                     <div>{s.task_id ? `Task: ${s.task_id}` : 'General focus'}</div>
@@ -144,11 +190,53 @@ export default function Dashboard({ user }) {
           <div className="card streak-card">
             <img src={takoProud} alt="Tako Proud" className="streak-mascot" />
             <h3>Your Focus Streak</h3>
-            <p className="streak-count">{streakCount} day{streakCount !== 1 ? 's' : ''}</p>
+            <p className="streak-count">
+              {streakCount} day{streakCount !== 1 ? 's' : ''}
+            </p>
             <p className="streak-text">Keep the momentum going 🔥</p>
           </div>
         </div>
       </div>
+
+      {/* ✅ Modal */}
+      {modalOpen && newTask && (
+        <div className="modal-overlay">
+          <div className="modal-card fade-in">
+            <h3>🧠 New Task Created</h3>
+            <h4 className="modal-task-title">{newTask.title}</h4>
+            <div className="modal-subtasks">
+              {newTask.subtasks.map((sub, i) => (
+                <div className="modal-subtask-row" key={i}>
+                  <input
+                    value={sub}
+                    placeholder="New subtask..."
+                    onChange={e => handleSubtaskChange(i, e.target.value)}
+                    className="modal-subtask-input"
+                  />
+                  <button
+                    className="trash-btn"
+                    onClick={() => removeSubtask(i)}
+                    aria-label="Delete subtask"
+                  >
+                    <FontAwesomeIcon icon={faTrash} />
+                  </button>
+                </div>
+              ))}
+            </div>
+            <button className="btn add-subtask-btn" onClick={addSubtask}>
+              + Add Subtask
+            </button>
+            <div className="modal-actions">
+              <button className="btn save-btn" onClick={saveSubtasks}>
+                Save Changes
+              </button>
+              <button className="btn start-btn" onClick={startFocusSession}>
+                Start Focus Session
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
