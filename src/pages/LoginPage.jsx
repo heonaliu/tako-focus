@@ -42,19 +42,15 @@ export default function LoginPage() {
       }}
     >
       <div className="auth-box">
-        <h2>Sign in with Google</h2>
+        <h2>Welcome to TakoFocus!</h2>
 
         {error && <p className="error" style={{ color: "red" }}>{error}</p>}
 
         <button
           onClick={handleGoogleSignIn}
+          className="btn"
           style={{
-            padding: "10px 20px",
-            background: "#4285F4",
-            color: "white",
-            border: "none",
-            borderRadius: "5px",
-            cursor: "pointer",
+            padding: "10px 30px",
           }}
         >
           Continue with Google
