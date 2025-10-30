@@ -1,15 +1,23 @@
 import React, { useEffect, useRef, useState } from 'react'
-import { FaPlay, FaPause } from 'react-icons/fa'
 
-export default function Timer({ initialMinutes = 25, onComplete, mode = 'pomodoro' }) {
+export default function Timer({
+  initialMinutes = 25,
+  onComplete,
+  mode = 'pomodoro',
+  autoStart = false
+}) {
   const [secondsLeft, setSecondsLeft] = useState(initialMinutes * 60)
-  const [running, setRunning] = useState(false)
+  const [running, setRunning] = useState(autoStart)
   const intervalRef = useRef(null)
 
+  // Reset timer when duration changes
   useEffect(() => {
     setSecondsLeft(initialMinutes * 60)
-  }, [initialMinutes])
+    if (autoStart) setRunning(true)
+    else setRunning(false)
+  }, [initialMinutes, autoStart])
 
+  // Countdown logic
   useEffect(() => {
     if (!running) {
       clearInterval(intervalRef.current)
@@ -17,14 +25,14 @@ export default function Timer({ initialMinutes = 25, onComplete, mode = 'pomodor
     }
 
     intervalRef.current = setInterval(() => {
-      setSecondsLeft((s) => {
-        if (s <= 1) {
+      setSecondsLeft(prev => {
+        if (prev <= 1) {
           clearInterval(intervalRef.current)
           setRunning(false)
-          onComplete && onComplete()
+          onComplete?.()
           return 0
         }
-        return s - 1
+        return prev - 1
       })
     }, 1000)
 
@@ -33,18 +41,20 @@ export default function Timer({ initialMinutes = 25, onComplete, mode = 'pomodor
 
   const mm = String(Math.floor(secondsLeft / 60)).padStart(2, '0')
   const ss = String(secondsLeft % 60).padStart(2, '0')
-
-  const color = mode === 'break' ? 'green' : 'red'
+  const color = mode === 'break' ? '#22c55e' : '#ef4444' // Tailwind green/red tones
 
   return (
     <div style={{ textAlign: 'center' }}>
-      <div className="timer-display" style={{ color }}>
+      <div
+        className="timer-display fade-in"
+        style={{
+          color,
+          fontSize: '4rem',
+          fontWeight: 'bold',
+          letterSpacing: '1px'
+        }}
+      >
         {mm}:{ss}
-      </div>
-      <div style={{ marginTop: 12, display: 'flex', gap: 10, justifyContent: 'center' }}>
-        <button className="btn" onClick={() => setRunning((r) => !r)}>
-          {running ? <FaPause /> : <FaPlay />}
-        </button>
       </div>
     </div>
   )

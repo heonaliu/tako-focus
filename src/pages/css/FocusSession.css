@@ -1,4 +1,4 @@
-/* === FocusSession.css (Merged + Enhanced) === */
+/* === FocusSession.css (Refined + Synced with Current JSX) === */
 
 .focus-container {
   max-width: 1100px;
@@ -22,6 +22,28 @@
 
 .timer-display {
   color: var(--accent);
+  font-size: 3rem;
+  font-weight: 700;
+  text-align: center;
+}
+
+/* Prevent hidden timer glitch when session inactive */
+.session-controls {
+  text-align: center;
+  margin-top: 1rem;
+}
+.session-controls .btn.start-btn {
+  background: #7c3aed;
+  color: #fff;
+  border: none;
+  border-radius: 0.8rem;
+  padding: 0.6rem 1.2rem;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background 0.2s ease;
+}
+.session-controls .btn.start-btn:hover {
+  background: #6d28d9;
 }
 
 .focus-card {
@@ -37,6 +59,7 @@
   display: flex;
   gap: 10px;
   margin-bottom: 10px;
+  flex-wrap: wrap;
 }
 
 .mode-select .btn {
@@ -59,169 +82,42 @@
   opacity: 0.9;
 }
 
-.duration-select {
-  margin-left: auto;
-  padding: 8px;
+/* === Mini Task List === */
+.task-card {
+  background: #fff;
+  border-radius: 1rem;
+  padding: 1rem 1.2rem;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
 }
 
-.task-card .task-desc {
-  color: var(--muted);
+.task-mini {
+  margin-top: 0.6rem;
+  border-bottom: 1px solid #f1f1f1;
+  padding-bottom: 0.6rem;
 }
 
-.task-placeholder {
-  margin-top: 12px;
+.task-mini label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 600;
+  cursor: pointer;
 }
 
-.task-placeholder-text {
-  color: var(--muted);
-}
-
-.start-session-btn {
-  margin-top: 12px;
-}
-
-/* === Mini Task List (Your Original) === */
-
-.task-select {
-  width: 100%;
-  padding: 0.5rem;
-  border-radius: 12px;
-  border: 2px solid #a855f7;
-  background: #faf7ff;
-  font-size: 1rem;
-  margin-top: 0.5rem;
-  outline: none;
-  transition: border-color 0.2s;
-}
-.task-select:focus {
-  border-color: #7c3aed;
-}
-
-.selected-task-preview {
-  background: #f5ebff;
-  border-radius: 12px;
-  padding: 0.75rem;
-  margin-top: 1rem;
-  font-size: 0.95rem;
-  border: 1px solid #d6bcfa;
-}
-
-.task-notes-preview {
-  color: #555;
+.task-notes-mini {
+  font-size: 0.85rem;
+  color: #666;
+  margin: 2px 0 0 1.8rem;
   font-style: italic;
 }
 
-.mini-task-list {
-  display: flex;
-  flex-direction: column;
-  gap: 0.8rem;
-  margin-top: 1rem;
-}
-
-.mini-task-item {
-  display: flex;
-  align-items: flex-start;
-  gap: 0.7rem;
-}
-
-.mini-task-content {
-  display: flex;
-  flex-direction: column;
-}
-
-.mini-task-title {
-  font-weight: 600;
-  font-size: 0.95rem;
-}
-
-.mini-task-title.done,
-.mini-subtask-title.done {
-  text-decoration: line-through;
-  color: #999;
-}
-
-.mini-task-notes {
-  font-size: 0.85rem;
-  color: #666;
-  margin: 2px 0 0 0;
-  padding-left: 0.5rem;
-}
-
-.mini-subtask-list {
-  list-style: none;
-  padding-left: 1.8rem; /* indent subtasks */
-  margin-top: 0.4rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.3rem;
-}
-
-.mini-subtask-item {
+.subtask-mini {
   display: flex;
   align-items: center;
   gap: 0.4rem;
-}
-
-/* === Custom Purple Checkbox === */
-.custom-checkbox {
-  position: relative;
-  display: inline-block;
-  width: 18px;
-  height: 18px;
-}
-
-.custom-checkbox.small {
-  width: 15px;
-  height: 15px;
-}
-
-.custom-checkbox input {
-  opacity: 0;
-  width: 0;
-  height: 0;
-}
-
-.custom-checkbox .checkmark {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 18px;
-  height: 18px;
-  background-color: #fff;
-  border: 2px solid #a855f7;
-  border-radius: 50%;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.custom-checkbox.small .checkmark {
-  width: 15px;
-  height: 15px;
-}
-
-.custom-checkbox input:checked + .checkmark {
-  background-color: #a855f7;
-  border-color: #9333ea;
-}
-
-.custom-checkbox .checkmark:after {
-  content: "";
-  position: absolute;
-  display: none;
-}
-
-.custom-checkbox input:checked + .checkmark:after {
-  display: block;
-}
-
-.custom-checkbox .checkmark:after {
-  left: 5px;
-  top: 1px;
-  width: 4px;
-  height: 8px;
-  border: solid white;
-  border-width: 0 2px 2px 0;
-  transform: rotate(45deg);
+  margin-left: 1.8rem;
+  font-size: 0.9rem;
+  color: #444;
 }
 
 /* === Custom Input Fields === */
@@ -231,12 +127,21 @@
   gap: 0.6rem;
   margin: 0.8rem 0;
 }
-
 .custom-inputs input {
   width: 60px;
   padding: 4px;
   border-radius: 6px;
   border: 1px solid #ccc;
+  text-align: center;
+}
+.custom-inputs input[type="number"] {
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+.custom-inputs input[type="number"]::-webkit-outer-spin-button,
+.custom-inputs input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
 }
 
 .timer-status {
@@ -246,24 +151,7 @@
   text-align: center;
 }
 
-/* Remove number input arrows */
-.custom-inputs input[type="number"] {
-  -moz-appearance: textfield;
-  appearance: textfield;
-  width: 70px;
-  padding: 4px 6px;
-  border: 1px solid #ccc;
-  border-radius: 6px;
-  text-align: center;
-}
-
-.custom-inputs input[type="number"]::-webkit-outer-spin-button,
-.custom-inputs input[type="number"]::-webkit-inner-spin-button {
-  -webkit-appearance: none;
-  margin: 0;
-}
-
-/* === Fullscreen Mode (New) === */
+/* === Fullscreen Session === */
 .focus-container.fullscreen {
   padding: 0;
   margin: 0;
@@ -274,13 +162,23 @@
   align-items: center;
   justify-content: center;
   position: relative;
+  overflow: hidden;
 }
 
 .fullscreen-session {
-  width: 100%;
-  height: 100%;
-  position: relative;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: var(--background, #fefefe);
+  z-index: 9999; /* above navbar */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
 }
+
 
 .timer-fullscreen-card {
   background: #fff;
@@ -291,6 +189,8 @@
   margin: 0 auto;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
   text-align: center;
+  position: relative;
+  z-index: 1;
 }
 
 .exit-btn {
@@ -304,7 +204,6 @@
   cursor: pointer;
   transition: color 0.2s ease;
 }
-
 .exit-btn:hover {
   color: #000;
 }
@@ -322,6 +221,7 @@
   overflow-y: auto;
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
   animation: fadeIn 0.4s ease forwards;
+  z-index: 2;
 }
 
 .floating-task-card h4 {
@@ -331,6 +231,33 @@
   font-weight: 600;
 }
 
+.floating-task-card .subtask-mini {
+  margin-left: 1.2rem;
+  font-size: 0.85rem;
+  color: #555;
+}
+
+/* === Tako Mascot Animation === */
+.tako-mascot {
+  position: absolute;
+  top: 10%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 120px;
+  animation: floaty 3s ease-in-out infinite;
+  z-index: 0;
+}
+@keyframes floaty {
+  0%,
+  100% {
+    transform: translate(-50%, 0);
+  }
+  50% {
+    transform: translate(-50%, -8px);
+  }
+}
+
+/* === Fade-In === */
 @keyframes fadeIn {
   from {
     opacity: 0;
@@ -341,3 +268,74 @@
     transform: translateY(0);
   }
 }
+
+
+/* Confirmation Modal Styles */
+.confirm-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  backdrop-filter: blur(6px);
+  background-color: rgba(0, 0, 0, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  animation: fadeIn 0.2s ease-in-out;
+}
+
+.confirm-modal {
+  background: var(--card-bg, #fff);
+  color: var(--text-color, #222);
+  border-radius: 1rem;
+  padding: 2rem;
+  width: 90%;
+  max-width: 400px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+  text-align: center;
+  animation: scaleUp 0.25s ease;
+}
+
+.confirm-modal h3 {
+  margin-bottom: 0.5rem;
+  font-size: 1.25rem;
+}
+
+.confirm-modal p {
+  font-size: 0.95rem;
+  margin-bottom: 1.5rem;
+  opacity: 0.85;
+}
+
+.confirm-actions {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+}
+
+.confirm-actions .btn {
+  padding: 0.5rem 1.25rem;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes scaleUp {
+  from {
+    transform: scale(0.95);
+    opacity: 0.8;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
