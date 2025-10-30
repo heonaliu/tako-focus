@@ -24,6 +24,7 @@ export default function FocusSession({ user }) {
   const [timerPaused, setTimerPaused] = useState(false)
 
   const totalStudyTime = useRef(0)
+    const completedBeforeSession = useRef(new Set()) // 🆕 track which tasks were already done before starting
 
   // 🧠 Load today's tasks and subtasks
   const loadTodayTasks = useCallback(async () => {
@@ -146,10 +147,15 @@ export default function FocusSession({ user }) {
     // Wait for confetti → then exit fullscreen and show summary
     setTimeout(() => {
       setIsSessionActive(false)
-      setSessionSummary({
+      const newlyCompleted = todayTasks.filter(
+        t => t.is_done && !completedBeforeSession.current.has(t.id)
+        ).length
+
+        setSessionSummary({
         totalStudyTime: totalStudyTime.current,
-        completedTasks: todayTasks.filter(t => t.is_done).length,
-      })
+        completedTasks: newlyCompleted,
+        })
+
       setShowSummaryModal(true)
     }, 1200)
   }
@@ -335,18 +341,25 @@ export default function FocusSession({ user }) {
                       <button
                         className="btn confirm-btn"
                         onClick={() => {
-                          setShowStartModal(false)
-                          setIsSessionActive(true)
-                          // reset state
-                          setSessionSummary(null)
-                          setShowSummaryModal(false)
-                          totalStudyTime.current = 0
-                          setCycleCount(0)
-                          setIsBreak(false)
-                        }}
-                      >
+                            setShowStartModal(false)
+                            setIsSessionActive(true)
+
+                            // 🧹 Reset previous session state
+                            setSessionSummary(null)
+                            setShowSummaryModal(false)
+                            totalStudyTime.current = 0
+                            setCycleCount(0)
+                            setIsBreak(false)
+
+                            // 🆕 Record which tasks were already completed before session started
+                            completedBeforeSession.current = new Set(
+                                todayTasks.filter(t => t.is_done).map(t => t.id)
+                            )
+                            }}
+                        >
                         Yes, start
-                      </button>
+                        </button>
+
                       <button
                         className="btn secondary cancel-btn"
                         onClick={() => setShowStartModal(false)}
