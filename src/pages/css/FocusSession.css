@@ -1,7 +1,10 @@
+/* === FocusSession.css (Merged + Enhanced) === */
+
 .focus-container {
   max-width: 1100px;
   margin: 34px auto;
   padding: 0 20px;
+  transition: all 0.3s ease;
 }
 
 .focus-grid {
@@ -11,24 +14,49 @@
   align-items: start;
 }
 
-.timer-display {
-    color:--var(--accent)
-}
-
 @media (max-width: 900px) {
   .focus-grid {
     grid-template-columns: 1fr;
   }
 }
 
+.timer-display {
+  color: var(--accent);
+}
+
 .focus-card {
   margin-bottom: 20px;
+  background: #fff;
+  border-radius: 1rem;
+  padding: 1.5rem;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+  transition: all 0.3s ease;
 }
 
 .mode-select {
   display: flex;
   gap: 10px;
   margin-bottom: 10px;
+}
+
+.mode-select .btn {
+  padding: 0.5rem 1rem;
+  border-radius: 0.6rem;
+  border: none;
+  cursor: pointer;
+  background: #7c3aed;
+  color: #fff;
+  font-weight: 500;
+  transition: background 0.2s ease;
+}
+
+.mode-select .btn.secondary {
+  background: #e5e5e5;
+  color: #333;
+}
+
+.mode-select .btn:hover {
+  opacity: 0.9;
 }
 
 .duration-select {
@@ -47,9 +75,12 @@
 .task-placeholder-text {
   color: var(--muted);
 }
+
 .start-session-btn {
   margin-top: 12px;
 }
+
+/* === Mini Task List (Your Original) === */
 
 .task-select {
   width: 100%;
@@ -131,6 +162,7 @@
   gap: 0.4rem;
 }
 
+/* === Custom Purple Checkbox === */
 .custom-checkbox {
   position: relative;
   display: inline-block;
@@ -192,6 +224,7 @@
   transform: rotate(45deg);
 }
 
+/* === Custom Input Fields === */
 .custom-inputs {
   display: flex;
   align-items: center;
@@ -215,8 +248,8 @@
 
 /* Remove number input arrows */
 .custom-inputs input[type="number"] {
-  -moz-appearance: textfield; /* Firefox */
-  appearance: textfield; /* Modern browsers */
+  -moz-appearance: textfield;
+  appearance: textfield;
   width: 70px;
   padding: 4px 6px;
   border: 1px solid #ccc;
@@ -228,4 +261,83 @@
 .custom-inputs input[type="number"]::-webkit-inner-spin-button {
   -webkit-appearance: none;
   margin: 0;
+}
+
+/* === Fullscreen Mode (New) === */
+.focus-container.fullscreen {
+  padding: 0;
+  margin: 0;
+  width: 100vw;
+  height: 100vh;
+  background: #f5f3ff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.fullscreen-session {
+  width: 100%;
+  height: 100%;
+  position: relative;
+}
+
+.timer-fullscreen-card {
+  background: #fff;
+  border-radius: 1.5rem;
+  padding: 2rem 3rem;
+  width: 80%;
+  max-width: 600px;
+  margin: 0 auto;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  text-align: center;
+}
+
+.exit-btn {
+  position: absolute;
+  top: 1.2rem;
+  right: 1.2rem;
+  border: none;
+  background: transparent;
+  font-size: 1.5rem;
+  color: #555;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.exit-btn:hover {
+  color: #000;
+}
+
+/* Floating Task Card */
+.floating-task-card {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background: #fff;
+  border-radius: 1rem;
+  padding: 1rem 1.2rem;
+  width: 250px;
+  max-height: 80vh;
+  overflow-y: auto;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+  animation: fadeIn 0.4s ease forwards;
+}
+
+.floating-task-card h4 {
+  margin-bottom: 0.5rem;
+  font-size: 1rem;
+  color: #333;
+  font-weight: 600;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
