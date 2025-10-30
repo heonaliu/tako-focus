@@ -2,7 +2,7 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { supabase } from '../supabaseClient';
 import './css/Tasks.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faCheck, faTrash, faEdit, faFilter, faCalendarAlt } from '@fortawesome/free-solid-svg-icons';
+import { faCheck, faTrash, faEdit, faCalendarAlt } from '@fortawesome/free-solid-svg-icons';
 
 export default function Tasks({ user }) {
   const [tasks, setTasks] = useState([]);
@@ -14,7 +14,6 @@ export default function Tasks({ user }) {
   const [showOverview, setShowOverview] = useState(false);
   const [editingTask, setEditingTask] = useState(null);
   const [filterMode, setFilterMode] = useState('today');
-  const [filterOpen, setFilterOpen] = useState(false);
 
   const loadTasks = useCallback(async () => {
     setLoading(true);
@@ -157,25 +156,27 @@ export default function Tasks({ user }) {
   }
 
   // 🟣 Updated activeTasks logic
-  const activeTasks = showOverview
-    ? [...tasks].sort((a, b) => a.due - b.due)
-    : tasks
-        .filter(task => {
-          const isToday = isSameLocalDate(task.due, today);
-          if (filterMode === 'today') return !task.is_done && isToday;
-          if (filterMode === 'week') {
-            const weekStart = new Date(today);
-            weekStart.setDate(today.getDate() - today.getDay());
-            const weekEnd = new Date(weekStart);
-            weekEnd.setDate(weekStart.getDate() + 6);
-            return !task.is_done && task.due >= weekStart && task.due <= weekEnd;
-          }
-          if (filterMode === 'all') return !task.is_done;
-          if (filterMode === 'before') return !task.is_done && task.due < today;
-          if (filterMode === 'after') return !task.is_done && task.due > today;
-          return false;
-        })
-        .sort((a, b) => a.due - b.due);
+  // 🟣 Updated activeTasks logic
+const activeTasks = showOverview
+  ? [...tasks].sort((a, b) => a.due - b.due)
+  : tasks
+      .filter(task => {
+        const isToday = isSameLocalDate(task.due, today);
+        if (filterMode === 'today') return isToday;
+        if (filterMode === 'week') {
+          const weekStart = new Date(today);
+          weekStart.setDate(today.getDate() - today.getDay());
+          const weekEnd = new Date(weekStart);
+          weekEnd.setDate(weekStart.getDate() + 6);
+          return task.due >= weekStart && task.due <= weekEnd;
+        }
+        if (filterMode === 'all') return true;
+        if (filterMode === 'before') return task.due < today;
+        if (filterMode === 'after') return task.due > today;
+        return false;
+      })
+      .sort((a, b) => a.due - b.due);
+
 
   const completedTasks = !showOverview
     ? tasks
@@ -189,37 +190,29 @@ export default function Tasks({ user }) {
   return (
     <div className="tasks-container">
       <h2 className="tasks-header">
-        <FontAwesomeIcon icon={faCalendarAlt} /> Tasks
+  <FontAwesomeIcon icon={faCalendarAlt} /> Tasks
+</h2>
 
-        {/* 🟣 Filter Button */}
-        <div className="filter-dropdown">
-          <button className="filter-btn" onClick={() => setFilterOpen(!filterOpen)}>
-            <FontAwesomeIcon icon={faFilter} /> Filter
-          </button>
+{/* 🟣 Always-visible filter bar */}
+<div className="filter-bar">
+  {['today', 'week', 'all', 'before', 'after'].map(mode => (
+    <button
+      key={mode}
+      onClick={() => {
+        setFilterMode(mode);
+        setShowOverview(mode === 'all');
+      }}
+      className={`filter-option ${filterMode === mode ? 'active' : ''}`}
+    >
+      {mode === 'today' && 'Today'}
+      {mode === 'week' && 'This Week'}
+      {mode === 'all' && 'All Tasks'}
+      {mode === 'before' && 'Before Today'}
+      {mode === 'after' && 'After Today'}
+    </button>
+  ))}
+</div>
 
-          {filterOpen && (
-            <div className="filter-options">
-              {['today', 'week', 'all', 'before', 'after'].map(mode => (
-                <button
-                  key={mode}
-                  onClick={() => {
-                    setFilterMode(mode);
-                    setFilterOpen(false);
-                    setShowOverview(mode === 'all');
-                  }}
-                  className={`filter-option ${filterMode === mode ? 'active' : ''}`}
-                >
-                  {mode === 'today' && 'Today'}
-                  {mode === 'week' && 'This Week'}
-                  {mode === 'all' && 'All Tasks'}
-                  {mode === 'before' && 'Before Today'}
-                  {mode === 'after' && 'After Today'}
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
-      </h2>
 
       {/* New Task Card */}
       <div className="card new-task-card">
