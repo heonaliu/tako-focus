@@ -114,60 +114,56 @@ export default function FocusSession({ user }) {
   return (
     <div className={`focus-container ${isSessionActive ? 'fullscreen' : ''}`}>
   {isSessionActive ? (
-    <div className="fullscreen-session fade-in">
-      <div className="timer-fullscreen-card">
+  <div className="fullscreen-session fade-in">
+    <div className="timer-fullscreen-card">
+      {/* Floating mascot switches depending on isBreak */}
+      <FloatingMascot mode={isBreak ? 'break' : 'study'} />
 
-        {/* 🐙 Floating Mascot above Timer */}
-        <FloatingMascot isBreak={isBreak} />
+      <Timer
+        key={`${isBreak ? 'break' : 'study'}-${cycleCount}-${mode}`}
+        initialMinutes={isBreak ? breakDuration : studyDuration}
+        onComplete={handleComplete}
+        mode={isBreak ? 'break' : 'study'}
+        autoStart
+      />
 
-        {/* ⏱️ Timer */}
-        <Timer
-          key={`${isBreak ? 'break' : 'study'}-${cycleCount}-${mode}`}
-          initialMinutes={isBreak ? breakDuration : studyDuration}
-          onComplete={handleComplete}
-          mode={isBreak ? 'break' : 'study'}
-          autoStart
-        />
+      <ExitButton onExit={() => setIsSessionActive(false)} />
+    </div>
 
-        {/* 🟣 Exit Button */}
-        <ExitButton onExit={() => setIsSessionActive(false)} />
-      </div>
-
-      {/* ✅ Floating Tasks Sidebar */}
-      <div className="floating-task-card">
-        <h4>Today's Tasks</h4>
-        {todayTasks.length > 0 ? (
-          todayTasks.map(task => (
-            <div key={task.id} className="task-mini">
-              <label>
+    <div className="floating-task-card">
+      <h4>Today's Tasks</h4>
+      {todayTasks.length > 0 ? (
+        todayTasks.map(task => (
+          <div key={task.id} className="task-mini">
+            <label>
+              <input
+                type="checkbox"
+                checked={task.is_done}
+                onChange={() => toggleTaskDone(task.id, task.is_done)}
+              />
+              {task.title}
+            </label>
+            {task.notes && <p className="task-notes-mini">{task.notes}</p>}
+            {subtasks[task.id]?.map(st => (
+              <div key={st.id} className="subtask-mini">
                 <input
                   type="checkbox"
-                  checked={task.is_done}
-                  onChange={() => toggleTaskDone(task.id, task.is_done)}
+                  checked={st.is_done}
+                  onChange={() => toggleSubtaskDone(st.id, st.is_done)}
                 />
-                {task.title}
-              </label>
-              {task.notes && (
-                <p className="task-notes-mini">{task.notes}</p>
-              )}
-              {subtasks[task.id]?.map(st => (
-                <div key={st.id} className="subtask-mini">
-                  <input
-                    type="checkbox"
-                    checked={st.is_done}
-                    onChange={() => toggleSubtaskDone(st.id, st.is_done)}
-                  />
-                  {st.title}
-                </div>
-              ))}
-            </div>
-          ))
-        ) : (
-          <p>No tasks for today 🎉</p>
-        )}
-      </div>
+                {st.title}
+              </div>
+            ))}
+          </div>
+        ))
+      ) : (
+        <p>No tasks for today 🎉</p>
+      )}
     </div>
-  ) : (
+  </div>
+) : (
+  // your normal mode view stays the same below...
+
     // Normal (non-fullscreen) layout
     <div className="focus-grid">
       <div className="focus-left">
