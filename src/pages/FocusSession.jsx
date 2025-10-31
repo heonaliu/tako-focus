@@ -6,6 +6,7 @@ import './css/FocusSession.css'
 import FloatingMascot from '../components/FloatingMascot'
 import confetti from 'canvas-confetti'
 import takoProud from '../assets/tako_proud.png'
+import takoBreak from '../assets/tako_break.png'
 
 export default function FocusSession({ user }) {
   const [mode, setMode] = useState('pomodoro')
@@ -231,8 +232,8 @@ export default function FocusSession({ user }) {
       <div className="break-modal-overlay">
         <div className={`break-modal-card ${fadeOutBreak ? 'fade-out' : ''}`}>
           <h3>☕ Break Starting!</h3>
-          <img src="/images/tako_break.png" alt="Tako mascot" />
-          <p>Take a short break! Session will resume shortly...</p>
+          <img src={takoBreak} alt="Tako mascot" />
+          <p>Time for a short break! Break will start shortly...</p>
         </div>
       </div>
     ) : null
