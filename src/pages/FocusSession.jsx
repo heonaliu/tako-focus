@@ -138,43 +138,58 @@ export default function FocusSession({ user }) {
   }
 
   // 🎯 End session
-  function endSession() {
-    const duration = 1000
-    const end = Date.now() + duration
-    const colors = ['#a78bfa', '#fbcfe8', '#c084fc']
+  async function endSession() {
+  const duration = 1000;
+  const end = Date.now() + duration;
+  const colors = ['#a78bfa', '#fbcfe8', '#c084fc'];
 
-    ;(function frame() {
-      confetti({
-        particleCount: 40,
-        startVelocity: 25,
-        spread: 70,
-        ticks: 60,
-        origin: { x: Math.random(), y: Math.random() - 0.2 },
-        colors,
-      })
-      if (Date.now() < end) requestAnimationFrame(frame)
-    })()
+  (function frame() {
+    confetti({
+      particleCount: 40,
+      startVelocity: 25,
+      spread: 70,
+      ticks: 60,
+      origin: { x: Math.random(), y: Math.random() - 0.2 },
+      colors,
+    });
+    if (Date.now() < end) requestAnimationFrame(frame);
+  })();
 
-    setTimeout(() => {
-        setIsSessionActive(false)
+  setTimeout(async () => {
+    setIsSessionActive(false);
 
-        // include partial study time if not on break
-        if (!isBreak) {
-            totalStudyTime.current += elapsedTime.current
-        }
+    if (!isBreak) {
+      const minutesStudied = elapsedTime.current; // ✅ already in minutes
+      totalStudyTime.current += minutesStudied;
 
-        const newlyCompleted = todayTasks.filter(
-            t => t.is_done && !completedBeforeSession.current.has(t.id)
-        ).length
+      try {
+        const { error } = await supabase.from('sessions').insert([
+          {
+            user_id: user.id,
+            duration_minutes: minutesStudied,
+            type: 'manual_end',
+            created_at: new Date().toISOString(),
+          },
+        ]);
+        if (error) console.error('❌ Error saving session:', error);
+      } catch (err) {
+        console.error('❌ Supabase insert failed:', err);
+      }
+    }
 
-        setSessionSummary({
-            totalStudyTime: Math.round(totalStudyTime.current * 10) / 10, // one decimal place
-            completedTasks: newlyCompleted,
-        })
-        setShowSummaryModal(true)
-        }, 1200)
+    const newlyCompleted = todayTasks.filter(
+      t => t.is_done && !completedBeforeSession.current.has(t.id)
+    ).length;
 
-  }
+    setSessionSummary({
+      totalStudyTime: Math.round(totalStudyTime.current * 10) / 10,
+      completedTasks: newlyCompleted,
+    });
+
+    setShowSummaryModal(true);
+  }, 1200);
+}
+
 
   // ✅ Task toggle helpers
   async function toggleTaskDone(id, done) {
