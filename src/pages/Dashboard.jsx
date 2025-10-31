@@ -26,6 +26,8 @@ export default function Dashboard({ user }) {
   const location = useLocation()
   const navigate = useNavigate()
   const [showWelcome, setShowWelcome] = useState(false);
+
+
   //const [hasShown, setHasShown] = useState(false);
     const takoImages = useMemo(
     () => [takoWave, takoIdle, takoFocus, takoTired, takoBreak],
