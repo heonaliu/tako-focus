@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from 'react'
+import { useLocation } from 'react-router-dom'
 import { supabase } from '../supabaseClient'
 import './css/Dashboard.css'
 import takoProud from '../assets/tako_proud.png'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faTrash } from '@fortawesome/free-solid-svg-icons'
+
 
 export default function Dashboard({ user }) {
   const [sessions, setSessions] = useState([])
@@ -14,51 +16,52 @@ export default function Dashboard({ user }) {
   const [modalOpen, setModalOpen] = useState(false)
   const [newTask, setNewTask] = useState(null)
   const [showSuccess, setShowSuccess] = useState(false);
+  const location = useLocation()
 
   useEffect(() => {
-  if (!user) return;
+  if (!user) return
   async function load() {
-  const today = new Date().toISOString().split('T')[0]
+    const now = new Date()
+    const startOfDay = new Date(now)
+    startOfDay.setHours(0, 0, 0, 0)
+    const endOfDay = new Date(now)
+    endOfDay.setHours(23, 59, 59, 999)
 
-  const { data, error } = await supabase
-    .from('sessions')
-    .select('id, user_id, task_id, duration_minutes, type, created_at')
-    .eq('user_id', user.id)
-    .eq('type', 'study')
-    .gte('created_at', `${today}T00:00:00`)
-    .lt('created_at', `${today}T23:59:59`)
-    .order('created_at', { ascending: false })
+    const { data, error } = await supabase
+      .from('sessions')
+      .select('id, user_id, task_id, duration_minutes, type, created_at, timer_label')
+      .eq('user_id', user.id)
+      .eq('type', 'study')
+      .gte('created_at', startOfDay.toISOString())
+      .lte('created_at', endOfDay.toISOString())
+      .order('created_at', { ascending: false })
 
-  if (error) {
-    console.error('❌ Error fetching sessions:', error)
-    return
-  }
-
-  setSessions(data || [])
-
-  // ✅ only today’s total
-  const total = (data || []).reduce((s, cur) => s + (cur.duration_minutes || 0), 0)
-  setTotalMinutes(total)
-
-  // ✅ optional streak logic unchanged below
-  if (data && data.length > 0) {
-    const dates = [...new Set(data.map(d => d.created_at.split('T')[0]))]
-    dates.sort((a, b) => new Date(b) - new Date(a))
-    let streak = 1
-    for (let i = 0; i < dates.length - 1; i++) {
-      const curr = new Date(dates[i])
-      const next = new Date(dates[i + 1])
-      const diff = (curr - next) / (1000 * 60 * 60 * 24)
-      if (diff === 1) streak++
-      else break
+    if (error) {
+      console.error('❌ Error fetching sessions:', error)
+      return
     }
-    setStreakCount(streak)
+
+    setSessions(data || [])
+    const total = (data || []).reduce((s, cur) => s + (cur.duration_minutes || 0), 0)
+    setTotalMinutes(total)
+
+    if (data && data.length > 0) {
+      const dates = [...new Set(data.map(d => d.created_at.split('T')[0]))]
+      dates.sort((a, b) => new Date(b) - new Date(a))
+      let streak = 1
+      for (let i = 0; i < dates.length - 1; i++) {
+        const curr = new Date(dates[i])
+        const next = new Date(dates[i + 1])
+        const diff = (curr - next) / (1000 * 60 * 60 * 24)
+        if (diff === 1) streak++
+        else break
+      }
+      setStreakCount(streak)
+    }
   }
-}
 
-
-  load();
-}, [user]);
+  load()
+}, [user, location.pathname])
 
 
   // --- your existing helper functions remain unchanged below ---
@@ -207,45 +210,42 @@ export default function Dashboard({ user }) {
       </div>
 
       {/* Dashboard Grid */}
-      <div className="dashboard-grid">
+        <div className="dashboard-grid">
         <div className="dashboard-left">
-          <div className="card total-focus-card">
+            <div className="card total-focus-card">
             <h3>Total Focus Time</h3>
-            {/* 🧩 updated: use toFixed(1) for one decimal */}
             <p className="total-minutes">{totalMinutes.toFixed(1)} minutes</p>
             <p className="session-count">
-            {sessions.length} session{sessions.length !== 1 ? 's' : ''} completed today
+                {sessions.length} session{sessions.length !== 1 ? 's' : ''} completed today
             </p>
+            </div>
 
-
-          </div>
-
-          <div className="card recent-sessions-card">
+            <div className="card recent-sessions-card">
             <h3>Recent Sessions</h3>
             <ul className="session-list">
-              {sessions.slice(0, 6).map(s => (
+                {sessions.slice(0, 6).map(s => (
                 <li key={s.id} className="session-item">
-                  <div className="session-row">
-                    <div>{s.task_id ? `Task: ${s.task_id}` : 'General focus'}</div>
+                    <div className="session-row">
+                    <div className="session-label">{s.timer_label || 'General focus'}</div>
                     <div className="session-duration">{s.duration_minutes?.toFixed(1)} min</div>
-                  </div>
+                    </div>
                 </li>
-              ))}
+                ))}
             </ul>
-          </div>
+            </div>
         </div>
 
         <div className="dashboard-right">
-          <div className="card streak-card">
+            <div className="card streak-card">
             <img src={takoProud} alt="Tako Proud" className="streak-mascot" />
             <h3>Your Focus Streak</h3>
             <p className="streak-count">
-              {streakCount} day{streakCount !== 1 ? 's' : ''}
+                {streakCount} day{streakCount !== 1 ? 's' : ''}
             </p>
             <p className="streak-text">Keep the momentum going 🔥</p>
-          </div>
+            </div>
         </div>
-      </div>
+        </div>
 
       {/* ✅ Modal */}
       {modalOpen && newTask && (

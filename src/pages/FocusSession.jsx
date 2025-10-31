@@ -116,7 +116,9 @@ export default function FocusSession({ user }) {
         duration_minutes: duration,
         type: sessionType,
         created_at: new Date().toISOString(),
-      })
+        timer_label: `${studyDuration} | ${breakDuration} Focus`, // 🧩 added
+        })
+
     } catch (err) {
       console.error('❌ Error saving session:', err)
     }
@@ -164,13 +166,15 @@ export default function FocusSession({ user }) {
 
       try {
         const { error } = await supabase.from('sessions').insert([
-          {
+        {
             user_id: user.id,
             duration_minutes: minutesStudied,
-            type: 'manual_end',
+            type: 'study',
             created_at: new Date().toISOString(),
-          },
-        ]);
+            timer_label: `${studyDuration} | ${breakDuration} Focus`, // 🧩 added
+        },
+        ])
+
         if (error) console.error('❌ Error saving session:', error);
       } catch (err) {
         console.error('❌ Supabase insert failed:', err);
