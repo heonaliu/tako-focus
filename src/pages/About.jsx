@@ -10,7 +10,7 @@ export default function About() {
         <h1 className="about-title">About TakoFocus</h1>
         <p className="about-text">
           TakoFocus is a simple, fun productivity app that combines a Pomodoro-style
-          focus timer with task tracking — helping you stay organized and motivated.
+          focus timer with task tracking — designed to conquer procrastination once and for all while helping you stay organized and motivated.
         </p>
         <footer className="about-footer">
           Developed by <span className="about-author">Heona Liu</span>
