@@ -161,65 +161,72 @@ useEffect(() => {
   }
 
   async function generatePlan() {
-    if (!focusGoal.trim() || !user) return
-    setLoadingPlan(true)
+    if (!focusGoal.trim() || !user) return;
+    setLoadingPlan(true);
 
     try {
-      const mockSteps = [
-        'Define your objective clearly',
-        'Gather materials or references',
-        'Work deeply for 25 minutes',
-      ]
+        // 👇 Call your Vercel serverless function
+        const res = await fetch("/api/generate-plan", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ prompt: focusGoal }),
+        });
 
-      const { data: taskData, error: taskError } = await supabase
-        .from('tasks')
+        const data = await res.json();
+
+        if (!res.ok || !data.subtasks) throw new Error(data.error || "No subtasks returned");
+
+        // Save to Supabase like before
+        const { data: taskData, error: taskError } = await supabase
+        .from("tasks")
         .insert({
-          user_id: user.id,
-          title: focusGoal,
-          due_date: new Date().toISOString().split('T')[0],
+            user_id: user.id,
+            title: focusGoal,
+            due_date: new Date().toISOString().split("T")[0],
         })
-        .select('*')
-        .single()
+        .select("*")
+        .single();
 
-      if (taskError) throw taskError
+        if (taskError) throw taskError;
 
-      const subs = mockSteps.map(s => ({
+        const subs = data.subtasks.map((s) => ({
         user_id: user.id,
         task_id: taskData.id,
         title: s,
-      }))
+        }));
 
-      const { data: subData, error: subError } = await supabase
-        .from('subtasks')
+        const { data: subData, error: subError } = await supabase
+        .from("subtasks")
         .insert(subs)
-        .select('*')
+        .select("*");
 
-      if (subError) throw subError
+        if (subError) throw subError;
 
-      setNewTask({
+        setNewTask({
         id: taskData?.id || Date.now(),
         title: focusGoal,
-        subtasks: subData?.map(s => s.title) || mockSteps,
-      })
+        subtasks: subData?.map((s) => s.title) || data.subtasks,
+        });
 
-      setModalOpen(true)
-      setFocusGoal('')
+        setModalOpen(true);
+        setFocusGoal("");
     } catch (err) {
-      console.error('Error generating plan:', err)
-      setNewTask({
+        console.error("Error generating plan:", err);
+        setNewTask({
         id: Date.now(),
         title: focusGoal,
         subtasks: [
-          'Step 1: Brainstorm',
-          'Step 2: Outline your process',
-          'Step 3: Execute for 25 min',
+            "Step 1: Define what success looks like",
+            "Step 2: Gather what you need",
+            "Step 3: Focus for one Pomodoro (25 min)",
         ],
-      })
-      setModalOpen(true)
+        });
+        setModalOpen(true);
     } finally {
-      setLoadingPlan(false)
+        setLoadingPlan(false);
     }
-  }
+}
+
 
   function handleSubtaskChange(index, value) {
     setNewTask(prev => {
