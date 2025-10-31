@@ -25,6 +25,8 @@ export default function FocusSession({ user }) {
 
   const totalStudyTime = useRef(0)
   const completedBeforeSession = useRef(new Set())
+  const elapsedTime = useRef(0)
+
 
   // 🧠 Load today's tasks and subtasks (fixed date query)
   const loadTodayTasks = useCallback(async () => {
@@ -154,17 +156,24 @@ export default function FocusSession({ user }) {
     })()
 
     setTimeout(() => {
-      setIsSessionActive(false)
-      const newlyCompleted = todayTasks.filter(
-        t => t.is_done && !completedBeforeSession.current.has(t.id)
-      ).length
+        setIsSessionActive(false)
 
-      setSessionSummary({
-        totalStudyTime: totalStudyTime.current,
-        completedTasks: newlyCompleted,
-      })
-      setShowSummaryModal(true)
-    }, 1200)
+        // include partial study time if not on break
+        if (!isBreak) {
+            totalStudyTime.current += elapsedTime.current
+        }
+
+        const newlyCompleted = todayTasks.filter(
+            t => t.is_done && !completedBeforeSession.current.has(t.id)
+        ).length
+
+        setSessionSummary({
+            totalStudyTime: Math.round(totalStudyTime.current * 10) / 10, // one decimal place
+            completedTasks: newlyCompleted,
+        })
+        setShowSummaryModal(true)
+        }, 1200)
+
   }
 
   // ✅ Task toggle helpers
@@ -237,7 +246,13 @@ export default function FocusSession({ user }) {
                 onComplete={handleComplete}
                 mode={isBreak ? 'break' : 'study'}
                 autoStart
-              />
+                onTick={(remainingSeconds) => {
+                    const totalSeconds = (isBreak ? breakDuration : studyDuration) * 60
+                    elapsedTime.current = (totalSeconds - remainingSeconds) / 60 // minutes
+                }}
+                />
+
+
             )}
             <ExitButton onExit={endSession} />
           </div>
