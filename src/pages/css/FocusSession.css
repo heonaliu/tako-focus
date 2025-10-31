@@ -454,7 +454,8 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 999;
+  z-index: 2000 !important; /* ensure always above timer or canvas */
+  pointer-events: all; /* prevents click-through */
 }
 
 .start-modal {
@@ -463,11 +464,25 @@
   border-radius: 1rem;
   box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
   text-align: center;
-  max-width: 300px;
+  max-width: 320px;
+  width: 90%;
+  position: relative;
+  z-index: 2100; /* sit above everything else */
+  animation: popIn 0.3s ease;
 }
 
 .start-modal h3 {
   margin-bottom: 0.5rem;
+}
+
+body.modal-open {
+  overflow: hidden;
+  pointer-events: none;
+}
+body.modal-open .start-modal-overlay,
+body.modal-open .confirm-overlay,
+body.modal-open .summary-overlay {
+  pointer-events: all;
 }
 
 .modal-actions {

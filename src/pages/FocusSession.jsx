@@ -23,6 +23,15 @@ export default function FocusSession({ user }) {
   const [fadeOutBreak, setFadeOutBreak] = useState(false)
   const [timerPaused, setTimerPaused] = useState(false)
 
+    // Prevent background scrolling or pointer events when modal is open
+    useEffect(() => {
+    if (showStartModal) {
+        document.body.classList.add('modal-open');
+    } else {
+        document.body.classList.remove('modal-open');
+    }
+    }, [showStartModal]);
+
   const totalStudyTime = useRef(0)
   const completedBeforeSession = useRef(new Set())
   const elapsedTime = useRef(0)
@@ -367,44 +376,43 @@ export default function FocusSession({ user }) {
 
               <div className="session-controls">
                 <button className="btn start-btn" onClick={() => setShowStartModal(true)}>
-                  Start Session
+                    Start Session
                 </button>
-              </div>
-
-              {showStartModal && (
+                </div>
+            </div>
+            {showStartModal && (
                 <div className="start-modal-overlay">
-                  <div className="start-modal fade-in">
+                    <div className="start-modal fade-in">
                     <h3>Start Focus Session?</h3>
                     <p>Are you ready to enter focus mode?</p>
                     <div className="modal-actions">
-                      <button
+                        <button
                         className="btn confirm-btn"
                         onClick={() => {
-                          setShowStartModal(false)
-                          setIsSessionActive(true)
-                          setSessionSummary(null)
-                          setShowSummaryModal(false)
-                          totalStudyTime.current = 0
-                          setCycleCount(0)
-                          setIsBreak(false)
-                          completedBeforeSession.current = new Set(
+                            setShowStartModal(false)
+                            setIsSessionActive(true)
+                            setSessionSummary(null)
+                            setShowSummaryModal(false)
+                            totalStudyTime.current = 0
+                            setCycleCount(0)
+                            setIsBreak(false)
+                            completedBeforeSession.current = new Set(
                             todayTasks.filter(t => t.is_done).map(t => t.id)
-                          )
+                            )
                         }}
-                      >
+                        >
                         Yes, start
-                      </button>
-                      <button
+                        </button>
+                        <button
                         className="btn secondary cancel-btn"
                         onClick={() => setShowStartModal(false)}
-                      >
+                        >
                         Cancel
-                      </button>
+                        </button>
                     </div>
-                  </div>
+                    </div>
                 </div>
-              )}
-            </div>
+                )}
           </div>
 
           <div className="focus-right">
@@ -452,3 +460,5 @@ export default function FocusSession({ user }) {
     </div>
   )
 }
+
+
