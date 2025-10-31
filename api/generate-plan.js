@@ -21,7 +21,7 @@ export default async function handler(req, res) {
         messages: [
           {
             role: "system",
-            content: "You are a helpful productivity assistant. Generate 3 concise subtasks for the user's focus goal."
+            content: "You are a helpful productivity assistant. Generate exactly 3 concise subtasks in JSON format, e.g. ['Step 1', 'Step 2', 'Step 3']."
           },
           {
             role: "user",
@@ -32,13 +32,31 @@ export default async function handler(req, res) {
     });
 
     const data = await response.json();
+    console.log("🧠 Full OpenRouter response:", JSON.stringify(data, null, 2));
 
-    console.log("🧠 OpenRouter API response:", data);
+    const content = data?.choices?.[0]?.message?.content || "";
 
-    const subtasks = data?.choices?.[0]?.message?.content
-      ?.split("\n")
-      .filter(line => line.trim() !== "")
-      .slice(0, 3) || [];
+    let subtasks = [];
+    try {
+      // Try to parse as JSON first
+      const parsed = JSON.parse(content);
+      if (Array.isArray(parsed)) subtasks = parsed;
+    } catch {
+      // Otherwise extract from plain text / bullet list
+      subtasks = content
+        .split(/\n|-/)
+        .map(l => l.replace(/^\s*\d+[\)\.]\s*/, "").trim())
+        .filter(Boolean)
+        .slice(0, 3);
+    }
+
+    if (!subtasks.length) {
+      subtasks = [
+        "Clarify the main objective",
+        "Break it into clear steps",
+        "Start with the first focused task"
+      ];
+    }
 
     res.status(200).json({ subtasks });
   } catch (err) {
