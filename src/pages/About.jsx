@@ -12,8 +12,15 @@ export default function About() {
           TakoFocus is a simple, fun productivity app that combines a Pomodoro-style
           focus timer with task tracking — designed to conquer procrastination once and for all while helping you stay organized and motivated.
         </p>
+        <br />
+        <br />
+        <p className="about-text">
+          stay tuned for updates. . .
+        </p>
+       
         <footer className="about-footer">
-          Developed by <span className="about-author">Heona Liu</span>
+          Established, Built & Developed by <span className="about-author">Heona Liu</span>
+          <p>est. 2025</p>
         </footer>
       </div>
     </div>
