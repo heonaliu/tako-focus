@@ -1,0 +1,71 @@
+.about-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background: linear-gradient(to bottom, #faf8ff, #f3f0ff);
+}
+
+.about-card {
+  background: #ffffff;
+  border-radius: 1.5rem;
+  box-shadow: 0 8px 20px rgba(163, 139, 255, 0.15);
+  padding: 2rem;
+  text-align: center;
+  max-width: 420px;
+  width: 90%;
+  border: 1px solid #ebe5ff;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+  /* 👇 Increased the height for a longer look */
+  min-height: 520px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.about-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 24px rgba(163, 139, 255, 0.25);
+}
+
+.about-img {
+  width: 110px;
+  height: 110px;
+  margin: 0 auto 1.5rem;
+  animation: float 3s ease-in-out infinite;
+}
+
+.about-title {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: #5e4b9a;
+  margin-bottom: 0.75rem;
+}
+
+.about-text {
+  color: #6b628a;
+  line-height: 1.6;
+  font-size: 1rem;
+  margin: 0 1rem;
+}
+
+.about-footer {
+  margin-top: 2rem;
+  font-size: 0.9rem;
+  color: #8b7fc5;
+  border-top: 1px solid #ede9fe;
+  padding-top: 0.75rem;
+  font-style: italic;
+  letter-spacing: 0.3px;
+}
+
+.about-author {
+  font-weight: 600;
+  color: #6d5fc2;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+
