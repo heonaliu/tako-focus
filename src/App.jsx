@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Routes, Route, Navigate, useLocation } from "react-router-dom";
-import { AnimatePresence } from "framer-motion";
+// eslint-disable-next-line no-unused-vars
+import { AnimatePresence, motion } from "framer-motion";
 import { useAuth } from "./context/AuthContext";
 import takoIdle from "./assets/tako_idle.png";
 import Navbar from "./components/Navbar";
@@ -12,7 +13,7 @@ import Tasks from "./pages/Tasks";
 import About from "./pages/About";
 import ProtectedRoute from "./components/ProtectedRoute";
 
-// 🐙 Tako Loading Screen with Spinner
+
 // 🐙 Tako Loading Screen with Centered Spinner
 function LoadingScreen() {
   return (
