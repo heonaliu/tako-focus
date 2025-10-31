@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { useLocation } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { supabase } from '../supabaseClient'
 import './css/Dashboard.css'
 import takoProud from '../assets/tako_proud.png'
@@ -17,6 +17,10 @@ export default function Dashboard({ user }) {
   const [newTask, setNewTask] = useState(null)
   const [showSuccess, setShowSuccess] = useState(false);
   const location = useLocation()
+  const navigate = useNavigate()
+  const [showWelcome, setShowWelcome] = useState(false);
+  //const [hasShown, setHasShown] = useState(false);
+
 
   useEffect(() => {
   if (!user) return
@@ -64,6 +68,35 @@ export default function Dashboard({ user }) {
 }, [user, location.pathname])
 
 
+useEffect(() => {
+    if (window.location.hash.includes("access_token")) {
+      navigate("/dashboard", { replace: true });
+    }
+  }, [navigate]);
+
+  // 🪄 Show banner once per login session, after user loads & URL stable
+  useEffect(() => {
+    // Wait until user is ready and we're on dashboard
+    if (!user || location.pathname !== "/dashboard") return;
+
+    // Delay slightly to ensure redirect finishes
+    const timeout = setTimeout(() => {
+      const hasSeen = sessionStorage.getItem("hasSeenWelcome");
+      if (!hasSeen) {
+        setShowWelcome(true);
+        sessionStorage.setItem("hasSeenWelcome", "true");
+      }
+    }, 400); // short delay avoids race condition
+
+    return () => clearTimeout(timeout);
+  }, [user, location.pathname]);
+
+  // Hide when navigating away
+  useEffect(() => {
+    if (showWelcome && location.pathname !== "/dashboard") {
+      setShowWelcome(false);
+    }
+  }, [location.pathname, showWelcome]);
   // --- your existing helper functions remain unchanged below ---
 
   async function saveSubtasks() {
@@ -188,9 +221,11 @@ export default function Dashboard({ user }) {
 
   return (
     <div className="dashboard-container">
-        <h2 className="dashboard-header">
-        Welcome back{user?.user_metadata?.name ? `, ${user.user_metadata.name}` : ''}!
-        </h2>
+      {showWelcome && (
+        <div className="welcome-banner">
+          Welcome back{user?.user_metadata?.name ? `, ${user.user_metadata.name}` : ""}!
+        </div>
+      )}
       <h2 className="dashboard-title">Dashboard</h2>
 
       {/* Focus Input Card */}

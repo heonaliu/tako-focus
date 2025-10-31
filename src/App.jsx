@@ -1,5 +1,5 @@
-import React from "react";
-import { Routes, Route } from "react-router-dom";
+import React, { useEffect } from "react";
+import { Routes, Route, Navigate } from "react-router-dom";
 import { useAuth } from "./context/AuthContext";
 
 import Navbar from "./components/Navbar";
@@ -13,6 +13,14 @@ import ProtectedRoute from "./components/ProtectedRoute";
 
 export default function App() {
   const { user } = useAuth();
+  
+
+  // 🔁 Redirect "/#" or "/#/" to "/dashboard"
+  useEffect(() => {
+    if (window.location.hash === "#" || window.location.hash === "#/") {
+      window.location.replace("/dashboard");
+    }
+  }, []);
 
   return (
     <>
@@ -20,8 +28,13 @@ export default function App() {
       <Navbar user={user} />
 
       <Routes>
-        {/* Homepage */}
-        <Route path="/" element={user ? <Dashboard user={user} /> : <Login />} />
+        {/* Root route: redirect based on login state */}
+        <Route
+          path="/"
+          element={
+            user ? <Navigate to="/dashboard" replace /> : <Login />
+          }
+        />
 
         {/* Public route */}
         <Route path="/about" element={<About />} />
@@ -54,6 +67,9 @@ export default function App() {
             </ProtectedRoute>
           }
         />
+
+        {/* Catch-all: redirect unknown paths to dashboard */}
+        <Route path="*" element={<Navigate to="/dashboard" replace />} />
       </Routes>
     </>
   );
