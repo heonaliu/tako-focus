@@ -18,7 +18,7 @@ export default function Navbar({ user }) {
         <div className="logo-section">
           <img src={takoIdle} alt="Tako" />
           {/* Show "Home" if not logged in, "Dashboard" if logged in */}
-          <Link to={user ? "/dashboard" : "/"}>{user ? "Dashboard" : "Home"}</Link>
+          <Link to={user ? "/dashboard" : "/"}>{user ? "My Dashboard" : "TakoFocus"}</Link>
         </div>
         <div className="links">
           <Link to="/about">About</Link>
