@@ -102,12 +102,20 @@ export default function App() {
   const location = useLocation();
   const [isLoading, setIsLoading] = useState(true);
 
-  // 🧭 Redirect /# → /dashboard
-  useEffect(() => {
-    if (window.location.hash === "#" || window.location.hash === "#/") {
-      window.location.replace("/dashboard");
-    }
-  }, []);
+
+// 🧭 After Supabase OAuth redirect
+useEffect(() => {
+  // If Supabase just redirected with an access token
+  if (window.location.hash.includes("access_token")) {
+    // wait a tiny bit to let supabase finish setting the session
+    setTimeout(() => {
+      window.location.replace("/dashboard"); // use replace to avoid hash staying in URL
+    }, 400); // 0.4s delay works well
+  } else if (window.location.hash === "#" || window.location.hash === "#/") {
+    window.location.replace("/dashboard");
+  }
+}, []);
+
 
   // ⏳ Smooth loading transition between pages
   useEffect(() => {
