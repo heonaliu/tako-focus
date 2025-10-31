@@ -24,35 +24,49 @@ export default function FocusSession({ user }) {
   const [timerPaused, setTimerPaused] = useState(false)
 
   const totalStudyTime = useRef(0)
-    const completedBeforeSession = useRef(new Set()) // 🆕 track which tasks were already done before starting
+  const completedBeforeSession = useRef(new Set())
 
-  // 🧠 Load today's tasks and subtasks
+  // 🧠 Load today's tasks and subtasks (fixed date query)
   const loadTodayTasks = useCallback(async () => {
     if (!user) return
-    const today = new Date().toISOString().split('T')[0]
+
+    const startOfDay = new Date()
+    startOfDay.setHours(0, 0, 0, 0)
+    const endOfDay = new Date()
+    endOfDay.setHours(23, 59, 59, 999)
 
     const { data: tasksData, error: taskError } = await supabase
       .from('tasks')
       .select('*')
       .eq('user_id', user.id)
-      .eq('due_date', today)
+      .gte('due_date', startOfDay.toISOString())
+      .lte('due_date', endOfDay.toISOString())
 
-    if (taskError) return console.error(taskError)
+    if (taskError) {
+      console.error('❌ Error loading tasks:', taskError)
+      return
+    }
+
+    if (!tasksData || tasksData.length === 0) {
+      setTodayTasks([])
+      setSubtasks({})
+      return
+    }
 
     const taskIds = tasksData.map(t => t.id)
-    if (taskIds.length > 0) {
-      const { data: subs, error: subError } = await supabase
-        .from('subtasks')
-        .select('*')
-        .in('task_id', taskIds)
+    const { data: subs, error: subError } = await supabase
+      .from('subtasks')
+      .select('*')
+      .in('task_id', taskIds)
 
-      if (!subError && subs) {
-        const grouped = subs.reduce((acc, s) => {
-          acc[s.task_id] = acc[s.task_id] ? [...acc[s.task_id], s] : [s]
-          return acc
-        }, {})
-        setSubtasks(grouped)
-      }
+    if (subError) {
+      console.error('❌ Error loading subtasks:', subError)
+    } else if (subs) {
+      const grouped = subs.reduce((acc, s) => {
+        acc[s.task_id] = acc[s.task_id] ? [...acc[s.task_id], s] : [s]
+        return acc
+      }, {})
+      setSubtasks(grouped)
     }
 
     setTodayTasks(tasksData)
@@ -77,7 +91,7 @@ export default function FocusSession({ user }) {
     }
   }
 
-  // ⏱️ Format duration nicely (e.g., 1 hr 15 min)
+  // ⏱️ Format duration
   function formatDuration(minutes) {
     const hrs = Math.floor(minutes / 60)
     const mins = Math.round(minutes % 60)
@@ -86,7 +100,7 @@ export default function FocusSession({ user }) {
     return `${mins} min${mins !== 1 ? 's' : ''}`
   }
 
-  // 🕒 When a timer finishes
+  // 🕒 Handle timer completion
   async function handleComplete() {
     if (!user?.id) return
     const sessionType = isBreak ? 'break' : 'study'
@@ -106,7 +120,6 @@ export default function FocusSession({ user }) {
     }
 
     if (!isBreak) {
-      // Study done → short break modal
       setTimerPaused(true)
       setShowBreakModal(true)
       setFadeOutBreak(false)
@@ -118,16 +131,12 @@ export default function FocusSession({ user }) {
         setTimerPaused(false)
       }, 10000)
     } else {
-      // Break done → back to study
       setIsBreak(false)
     }
   }
 
-  // 🎯 End session manually
+  // 🎯 End session
   function endSession() {
-    console.log('📘 Ending session...')
-
-    // 🎉 Confetti burst first
     const duration = 1000
     const end = Date.now() + duration
     const colors = ['#a78bfa', '#fbcfe8', '#c084fc']
@@ -144,18 +153,16 @@ export default function FocusSession({ user }) {
       if (Date.now() < end) requestAnimationFrame(frame)
     })()
 
-    // Wait for confetti → then exit fullscreen and show summary
     setTimeout(() => {
       setIsSessionActive(false)
       const newlyCompleted = todayTasks.filter(
         t => t.is_done && !completedBeforeSession.current.has(t.id)
-        ).length
+      ).length
 
-        setSessionSummary({
+      setSessionSummary({
         totalStudyTime: totalStudyTime.current,
         completedTasks: newlyCompleted,
-        })
-
+      })
       setShowSummaryModal(true)
     }, 1200)
   }
@@ -209,20 +216,16 @@ export default function FocusSession({ user }) {
               ? `✅ ${sessionSummary.completedTasks} tasks completed!`
               : 'No tasks marked complete this time.'}
           </p>
-          <button
-            className="btn close-btn"
-            onClick={() => setShowSummaryModal(false)}
-          >
+          <button className="btn close-btn" onClick={() => setShowSummaryModal(false)}>
             Close
           </button>
         </div>
       </div>
     ) : null
 
-  // 🎬 Component Layout
+  // 🎬 Layout
   return (
     <div className={`focus-container ${isSessionActive ? 'fullscreen' : ''}`}>
-      {/* FULLSCREEN SESSION VIEW */}
       {isSessionActive ? (
         <div className="fullscreen-session fade-in">
           <div className="timer-fullscreen-card">
@@ -244,35 +247,41 @@ export default function FocusSession({ user }) {
             {todayTasks.length > 0 ? (
               todayTasks.map(task => (
                 <div key={task.id} className="task-mini">
-                  <label>
+                <label className="task-label">
                     <input
-                      type="checkbox"
-                      checked={task.is_done}
-                      onChange={() => toggleTaskDone(task.id, task.is_done)}
+                    type="checkbox"
+                    checked={task.is_done}
+                    onChange={() => toggleTaskDone(task.id, task.is_done)}
+                    aria-label={`Mark ${task.title} done`}
                     />
-                    {task.title}
-                  </label>
-                  {subtasks[task.id]?.map(st => (
+                    <span className="custom-checkbox" aria-hidden="true"></span>
+                    <span className="task-text">{task.title}</span>
+                </label>
+
+                {subtasks[task.id]?.map(st => (
                     <div key={st.id} className="subtask-mini">
-                      <input
+                    <label className="task-label">
+                        <input
                         type="checkbox"
                         checked={st.is_done}
                         onChange={() => toggleSubtaskDone(st.id, st.is_done)}
-                      />
-                      {st.title}
+                        aria-label={`Mark ${st.title} done`}
+                        />
+                        <span className="custom-checkbox small" aria-hidden="true"></span>
+                        <span className="task-text">{st.title}</span>
+                    </label>
                     </div>
-                  ))}
+                ))}
                 </div>
+
               ))
             ) : (
               <p>No tasks for today 🎉</p>
             )}
           </div>
-
           <BreakModal />
         </div>
       ) : (
-        /* NORMAL DASHBOARD VIEW */
         <div className="focus-grid">
           <div className="focus-left">
             <h2>Focus Session</h2>
@@ -323,15 +332,11 @@ export default function FocusSession({ user }) {
               />
 
               <div className="session-controls">
-                <button
-                  className="btn start-btn"
-                  onClick={() => setShowStartModal(true)}
-                >
+                <button className="btn start-btn" onClick={() => setShowStartModal(true)}>
                   Start Session
                 </button>
               </div>
 
-              {/* Start Modal */}
               {showStartModal && (
                 <div className="start-modal-overlay">
                   <div className="start-modal fade-in">
@@ -341,25 +346,20 @@ export default function FocusSession({ user }) {
                       <button
                         className="btn confirm-btn"
                         onClick={() => {
-                            setShowStartModal(false)
-                            setIsSessionActive(true)
-
-                            // 🧹 Reset previous session state
-                            setSessionSummary(null)
-                            setShowSummaryModal(false)
-                            totalStudyTime.current = 0
-                            setCycleCount(0)
-                            setIsBreak(false)
-
-                            // 🆕 Record which tasks were already completed before session started
-                            completedBeforeSession.current = new Set(
-                                todayTasks.filter(t => t.is_done).map(t => t.id)
-                            )
-                            }}
-                        >
+                          setShowStartModal(false)
+                          setIsSessionActive(true)
+                          setSessionSummary(null)
+                          setShowSummaryModal(false)
+                          totalStudyTime.current = 0
+                          setCycleCount(0)
+                          setIsBreak(false)
+                          completedBeforeSession.current = new Set(
+                            todayTasks.filter(t => t.is_done).map(t => t.id)
+                          )
+                        }}
+                      >
                         Yes, start
-                        </button>
-
+                      </button>
                       <button
                         className="btn secondary cancel-btn"
                         onClick={() => setShowStartModal(false)}
@@ -373,32 +373,39 @@ export default function FocusSession({ user }) {
             </div>
           </div>
 
-          {/* Task list panel */}
           <div className="focus-right">
             <div className="card task-card">
               <h3>Today's Tasks</h3>
               {todayTasks.length > 0 ? (
                 todayTasks.map(task => (
                   <div key={task.id} className="task-mini">
-                    <label>
-                      <input
+                    <label className="task-label">
+                        <input
                         type="checkbox"
                         checked={task.is_done}
                         onChange={() => toggleTaskDone(task.id, task.is_done)}
-                      />
-                      {task.title}
-                    </label>
-                    {subtasks[task.id]?.map(st => (
-                      <div key={st.id} className="subtask-mini">
-                        <input
-                          type="checkbox"
-                          checked={st.is_done}
-                          onChange={() => toggleSubtaskDone(st.id, st.is_done)}
+                        aria-label={`Mark ${task.title} done`}
                         />
-                        {st.title}
-                      </div>
+                        <span className="custom-checkbox" aria-hidden="true"></span>
+                        <span className="task-text">{task.title}</span>
+                    </label>
+
+                    {subtasks[task.id]?.map(st => (
+                        <div key={st.id} className="subtask-mini">
+                        <label className="task-label">
+                            <input
+                            type="checkbox"
+                            checked={st.is_done}
+                            onChange={() => toggleSubtaskDone(st.id, st.is_done)}
+                            aria-label={`Mark ${st.title} done`}
+                            />
+                            <span className="custom-checkbox" aria-hidden="true"></span>
+                            <span className="task-text">{st.title}</span>
+                        </label>
+                        </div>
                     ))}
-                  </div>
+                    </div>
+
                 ))
               ) : (
                 <p>No tasks for today 🎉</p>
@@ -407,8 +414,6 @@ export default function FocusSession({ user }) {
           </div>
         </div>
       )}
-
-      {/* ✅ Keep Summary Modal always mounted */}
       <SummaryModal />
     </div>
   )

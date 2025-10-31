@@ -144,6 +144,114 @@
   margin: 0;
 }
 
+/* ✅ Clean, scalable rounded-square checkboxes (no white oval or dot) */
+.task-mini input[type="checkbox"],
+.subtask-mini input[type="checkbox"] {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  background-color: #fff;
+  border: 2px solid #a78bfa;
+  border-radius: 8px;
+  width: 22px;
+  height: 22px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+  position: relative;
+}
+/* Hover effect */
+.task-mini input[type="checkbox"]:hover,
+.subtask-mini input[type="checkbox"]:hover {
+  border-color: #7c3aed;
+  box-shadow: 0 0 0 3px rgba(167, 139, 250, 0.2);
+}
+
+/* Checked box */
+.task-mini input[type="checkbox"]:checked,
+.subtask-mini input[type="checkbox"]:checked {
+  background-color: #a78bfa;
+  border-color: #7c3aed;
+}
+
+/* Custom checkmark — clean and centered */
+.task-mini input[type="checkbox"]:checked::after,
+.subtask-mini input[type="checkbox"]:checked::after {
+  content: '';
+  position: absolute;
+  width: 6px;
+  height: 11px;
+  border: solid #fff;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+  top: 3px;
+  left: 7px;
+}
+
+.task-label input[type="checkbox"] {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+  margin: 0;
+}
+
+.task-label {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  cursor: pointer;
+  user-select: none;
+}
+
+.task-label .custom-checkbox {
+  width: 22px;
+  height: 22px;
+  border: 2px solid #a78bfa;
+  border-radius: 8px;
+  background: #fff;
+  box-sizing: border-box;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: border-color 160ms ease, background-color 160ms ease, box-shadow 160ms ease;
+}
+
+.task-label:hover .custom-checkbox,
+.task-label input[type="checkbox"]:focus + .custom-checkbox {
+  border-color: #7c3aed;
+  box-shadow: 0 0 0 3px rgba(167,139,250,0.12);
+}
+
+.task-label input[type="checkbox"]:checked + .custom-checkbox {
+  background-color: #a78bfa;
+  border-color: #7c3aed;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='none' stroke='%23fff' stroke-width='4' stroke-linecap='round' stroke-linejoin='round' d='M5 13l4 4L19 7'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-size: 58% 58%;
+  background-position: center;
+}
+
+
+
+.task-label .task-text {
+  flex: 1 1 auto;
+  min-width: 0;
+  word-break: break-word;
+}
+
+.subtask-mini .custom-checkbox {
+  width: 18px;
+  height: 18px;
+  border-radius: 6px;
+}
+
+
+
 .timer-status {
   margin-top: 0.6rem;
   font-weight: 500;
