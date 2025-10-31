@@ -188,6 +188,9 @@ export default function Dashboard({ user }) {
 
   return (
     <div className="dashboard-container">
+        <h2 className="dashboard-header">
+        Welcome back{user?.user_metadata?.name ? `, ${user.user_metadata.name}` : ''}!
+        </h2>
       <h2 className="dashboard-title">Dashboard</h2>
 
       {/* Focus Input Card */}

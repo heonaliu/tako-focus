@@ -488,3 +488,12 @@
     margin-bottom: 20px;
   }
 }
+
+.dashboard-header {
+  font-size: 1.6rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+  color: #6b46c1;
+  padding-left: 1rem;
+}
+
