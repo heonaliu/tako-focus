@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useMemo } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { supabase } from '../supabaseClient'
 import './css/Dashboard.css'
@@ -27,7 +27,10 @@ export default function Dashboard({ user }) {
   const navigate = useNavigate()
   const [showWelcome, setShowWelcome] = useState(false);
   //const [hasShown, setHasShown] = useState(false);
-  const takoImages = [takoWave, takoIdle, takoFocus, takoTired, takoBreak];
+    const takoImages = useMemo(
+    () => [takoWave, takoIdle, takoFocus, takoTired, takoBreak],
+    []
+  );
   const [currentTako, setCurrentTako] = useState(
   takoImages[Math.floor(Math.random() * takoImages.length)]
 );
@@ -37,14 +40,15 @@ useEffect(() => {
   const interval = setInterval(() => {
     setFade(true);
     setTimeout(() => {
-      const nextTako = takoImages[Math.floor(Math.random() * takoImages.length)];
+      const nextTako =
+        takoImages[Math.floor(Math.random() * takoImages.length)];
       setCurrentTako(nextTako);
       setFade(false);
     }, 1000); // fade duration
   }, 45000); // 🕒 switch every 45 seconds
 
   return () => clearInterval(interval);
-}, []);
+}, [takoImages]);
 
   useEffect(() => {
   if (!user) return
