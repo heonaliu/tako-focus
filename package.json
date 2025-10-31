@@ -12,7 +12,9 @@
   "dependencies": {
     "@fortawesome/free-solid-svg-icons": "^7.1.0",
     "@fortawesome/react-fontawesome": "^3.1.0",
+    "@phosphor-icons/react": "^2.1.10",
     "@supabase/supabase-js": "^2.76.1",
+    "canvas-confetti": "^1.9.4",
     "react": "^19.1.1",
     "react-calendar": "^6.0.0",
     "react-dom": "^19.1.1",

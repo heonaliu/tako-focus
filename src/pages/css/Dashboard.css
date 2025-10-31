@@ -200,7 +200,7 @@
 .trash-btn {
   background: none;
   border: none;
-  color: #ff7b7b;
+  color: var(--accent);
   cursor: pointer;
   font-size: 1.2rem;
   padding: 0.25rem;
@@ -208,7 +208,7 @@
 }
 
 .trash-btn:hover {
-  color: #ff4d4d;
+  color: #56ffad;
   transform: scale(1.1);
 }
 
@@ -258,7 +258,7 @@
   max-width: 480px;
   width: 90%;
   text-align: center;
-  box-shadow: 0 0 20px rgba(155, 107, 255, 0.25);
+  box-shadow: 0 0 20px rgba(255, 255, 255, 0.25);
 }
 
 .modal-task-title {
@@ -314,5 +314,177 @@
   }
   100% {
     transform: scale(1);
+  }
+}
+
+/* --- Dashboard Summary Section --- */
+.dashboard-container {
+  padding: 24px 32px;
+  background-color: #f9fafb;
+  min-height: 100vh;
+  color: #1f2937;
+}
+
+.dashboard-title {
+  font-size: 1.6rem;
+  font-weight: 600;
+  margin-bottom: 24px;
+  padding-left: 6px;
+}
+
+/* Main layout */
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 28px;
+  align-items: flex-start;
+}
+
+.dashboard-left {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* --- Cards --- */
+.card {
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
+  padding: 22px 26px;
+  transition: all 0.25s ease;
+}
+
+.card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.12);
+}
+
+/* --- Total Focus Card --- */
+.total-focus-card h3 {
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin-bottom: 10px;
+}
+
+.total-minutes {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #4f46e5;
+  margin-bottom: 4px;
+}
+
+.session-count {
+  font-size: 0.95rem;
+  color: #6b7280;
+}
+
+/* --- Recent Sessions Card --- */
+.recent-sessions-card h3 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: 12px;
+}
+
+.session-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.session-item {
+  padding: 10px 0;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.session-item:last-child {
+  border-bottom: none;
+}
+
+.session-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.session-label {
+  font-weight: 500;
+  color: #374151;
+}
+
+.session-duration {
+  color: #6b7280;
+  font-weight: 500;
+}
+
+/* --- Streak Card (Right Side) --- */
+/* --- Streak Card (Right Side) --- */
+.streak-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+
+  background: linear-gradient(135deg, #c7d2fe 0%, #a78bfa 100%);
+  color: white;
+  border-radius: 16px;
+  box-shadow: 0 4px 14px rgba(99, 102, 241, 0.3);
+  padding: 40px 20px;
+  height: 100%;
+  overflow: hidden;
+}
+
+.streak-card h3 {
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin-top: 120px; /* leave room for Tako floating above */
+  margin-bottom: 8px;
+}
+
+.streak-count {
+  font-size: 2.2rem;
+  font-weight: 700;
+  margin: 4px 0;
+}
+
+.streak-text {
+  font-size: 1rem;
+  opacity: 0.9;
+}
+
+/* Floating Tako centered */
+.streak-mascot {
+  position: absolute;
+  top: 50px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 110px;
+  height: auto;
+  animation: floaty 3s ease-in-out infinite;
+}
+
+@keyframes floaty {
+  0%, 100% {
+    transform: translate(-50%, 0);
+  }
+  50% {
+    transform: translate(-50%, -10px);
+  }
+}
+
+/* --- Responsive --- */
+@media (max-width: 900px) {
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .dashboard-right {
+    order: -1;
+  }
+
+  .streak-card {
+    margin-bottom: 20px;
   }
 }

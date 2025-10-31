@@ -4,20 +4,20 @@ export default function Timer({
   initialMinutes = 25,
   onComplete,
   mode = 'pomodoro',
-  autoStart = false
+  autoStart = false,
+  onTick // 👈 optional callback for FocusSession tracking
 }) {
   const [secondsLeft, setSecondsLeft] = useState(initialMinutes * 60)
   const [running, setRunning] = useState(autoStart)
   const intervalRef = useRef(null)
 
-  // Reset timer when duration changes
+  // 🧭 Reset when duration or autoStart changes
   useEffect(() => {
     setSecondsLeft(initialMinutes * 60)
-    if (autoStart) setRunning(true)
-    else setRunning(false)
+    setRunning(autoStart)
   }, [initialMinutes, autoStart])
 
-  // Countdown logic
+  // ⏱️ Countdown logic
   useEffect(() => {
     if (!running) {
       clearInterval(intervalRef.current)
@@ -26,22 +26,25 @@ export default function Timer({
 
     intervalRef.current = setInterval(() => {
       setSecondsLeft(prev => {
-        if (prev <= 1) {
+        const next = prev - 1
+        if (next <= 0) {
           clearInterval(intervalRef.current)
           setRunning(false)
           onComplete?.()
           return 0
         }
-        return prev - 1
+        onTick?.(next) // 👈 report remaining seconds back
+        return next
       })
     }, 1000)
 
     return () => clearInterval(intervalRef.current)
-  }, [running, onComplete])
+  }, [running, onComplete, onTick])
 
+  // 🧮 Format display
   const mm = String(Math.floor(secondsLeft / 60)).padStart(2, '0')
   const ss = String(secondsLeft % 60).padStart(2, '0')
-  const color = mode === 'break' ? '#34D399' : '#C77DFF' // Tailwind green/red tones
+  const color = mode === 'break' ? '#34D399' : '#C77DFF'
 
   return (
     <div style={{ textAlign: 'center' }}>
