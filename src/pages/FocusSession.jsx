@@ -150,7 +150,7 @@ export default function FocusSession({ user }) {
   }
 
   // 🎯 End session
-  async function endSession() {
+async function endSession() {
   const duration = 1000;
   const end = Date.now() + duration;
   const colors = ['#a78bfa', '#fbcfe8', '#c084fc'];
@@ -170,20 +170,23 @@ export default function FocusSession({ user }) {
   setTimeout(async () => {
     setIsSessionActive(false);
 
+    // 🟣 FIX: ensure the timer resets to study mode color
+    setIsBreak(false);
+
     if (!isBreak) {
       const minutesStudied = elapsedTime.current; // ✅ already in minutes
       totalStudyTime.current += minutesStudied;
 
       try {
         const { error } = await supabase.from('sessions').insert([
-        {
+          {
             user_id: user.id,
             duration_minutes: minutesStudied,
             type: 'study',
             created_at: new Date().toISOString(),
             timer_label: `${studyDuration} | ${breakDuration} Focus`, // 🧩 added
-        },
-        ])
+          },
+        ]);
 
         if (error) console.error('❌ Error saving session:', error);
       } catch (err) {
@@ -192,7 +195,7 @@ export default function FocusSession({ user }) {
     }
 
     const newlyCompleted = todayTasks.filter(
-      t => t.is_done && !completedBeforeSession.current.has(t.id)
+      (t) => t.is_done && !completedBeforeSession.current.has(t.id)
     ).length;
 
     setSessionSummary({
