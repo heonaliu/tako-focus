@@ -6,6 +6,13 @@ import takoProud from '../assets/tako_proud.png'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faTrash } from '@fortawesome/free-solid-svg-icons'
 
+//Images
+import takoWave from "../assets/tako_wave.png";
+import takoIdle from "../assets/tako_idle.png";
+import takoFocus from "../assets/tako_focus.png";
+import takoTired from "../assets/tako_tired.png";
+import takoBreak from "../assets/tako_break.png";
+
 
 export default function Dashboard({ user }) {
   const [sessions, setSessions] = useState([])
@@ -20,7 +27,24 @@ export default function Dashboard({ user }) {
   const navigate = useNavigate()
   const [showWelcome, setShowWelcome] = useState(false);
   //const [hasShown, setHasShown] = useState(false);
+  const takoImages = [takoWave, takoIdle, takoFocus, takoTired, takoBreak];
+  const [currentTako, setCurrentTako] = useState(
+  takoImages[Math.floor(Math.random() * takoImages.length)]
+);
+const [fade, setFade] = useState(false);
 
+useEffect(() => {
+  const interval = setInterval(() => {
+    setFade(true);
+    setTimeout(() => {
+      const nextTako = takoImages[Math.floor(Math.random() * takoImages.length)];
+      setCurrentTako(nextTako);
+      setFade(false);
+    }, 1000); // fade duration
+  }, 45000); // 🕒 switch every 45 seconds
+
+  return () => clearInterval(interval);
+}, []);
 
   useEffect(() => {
   if (!user) return
@@ -256,6 +280,13 @@ useEffect(() => {
             <p className="session-count">
                 {sessions.length} session{sessions.length !== 1 ? 's' : ''} completed today
             </p>
+            <div className="tako-rotation-container">
+            <img
+                src={currentTako}
+                alt="Tako mascot"
+                className={`corner-tako ${fade ? "fade-out" : "fade-in"}`}
+            />
+            </div>
             </div>
 
             <div className="card recent-sessions-card">
