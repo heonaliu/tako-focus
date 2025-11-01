@@ -8,7 +8,7 @@ TakoFocus is a minimalist, AI-powered study and productivity web app designed to
 
 - **Creator:** Heona Liu  
 - **Started:** October 28, 2025  
-- **GitHub Repository:** _[Add link here]_  
+- **Website** _[takofocus.vercel.app]_  
 - **Tech Stack:** React, Tailwind CSS, Supabase, Vercel, Google OAuth, Procreate  
 - **AI Integration:** OpenRouter/OpenAI (in progress)  
 
