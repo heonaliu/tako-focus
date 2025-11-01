@@ -21,9 +21,9 @@ TakoFocus brings together productivity and creativity: combining a Pomodoro focu
 As a high school junior navigating classes, tests, projects, and life in general, I realized that staying focused and balanced is harder than it should be. TakoFocus began as a hackathon project and became a passion project focused on:
 
 - Reducing procrastination
-- Making studying **fun and calming**
-- Combining my love for **coding** and **digital art**
-- Exploring how **AI and digital art** can work together
+- Making studying fun and calming
+- Combining my love for **coding and digital art
+- Exploring how AI and digital art can work together
 
 ---
 
@@ -94,4 +94,4 @@ Built using assistance from ChatGPT for code generation and debugging. Future pl
 
 ## 👩‍💻 About the Creator
 
-Hi! I’m **Heona Liu**, a student passionate about combining **coding**, **AI**, and **digital art**. TakoFocus is built to make studying feel productive, personalized, and enjoyable
+Hi! I’m **Heona Liu**, a student passionate about combining coding, AI, and digital art. TakoFocus is built to make studying feel productive, personalized, and enjoyable
