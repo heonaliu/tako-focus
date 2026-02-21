@@ -23,7 +23,7 @@ As a high school junior navigating classes, tests, projects, and life in general
 
 - Reducing procrastination
 - Making studying fun and calming
-- Combining my love for \*\*coding and digital art
+- Combining my love for coding and digital art
 - Exploring how AI and digital art can work together
 
 ---
