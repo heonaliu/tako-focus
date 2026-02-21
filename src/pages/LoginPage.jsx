@@ -17,13 +17,16 @@ export default function LoginPage() {
   const handleGoogleSignIn = async () => {
     setError("");
     try {
-      const { error } = await supabase.auth.signInWithOAuth({
+      const { data, error } = await supabase.auth.signInWithOAuth({
         provider: "google",
         options: {
-          redirectTo: window.location.origin, // ensures redirect goes to your app
+          redirectTo: undefined, // IMPORTANT: popup login
         },
       });
+
       if (error) throw error;
+
+      console.log("Login successful!", data);
     } catch (err) {
       console.error("Google sign-in error:", err.message);
       setError("Error signing in with Google: " + err.message);
