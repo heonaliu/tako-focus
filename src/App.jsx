@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Routes, Route, Navigate, useLocation } from "react-router-dom";
 // eslint-disable-next-line no-unused-vars
 import { AnimatePresence, motion } from "framer-motion";
+import { supabase } from "./supabaseClient";
 import { useAuth } from "./context/AuthContext";
 import takoIdle from "./assets/tako_idle.png";
 import Navbar from "./components/Navbar";
@@ -102,13 +103,20 @@ export default function App() {
 
   // 🧭 After Supabase OAuth redirect
   useEffect(() => {
-    // If Supabase just redirected with an access token
-    if (window.location.hash.includes("access_token")) {
-      // wait a tiny bit to let supabase finish setting the session
-      setTimeout(() => {
-        window.location.replace("/focus"); // use replace to avoid hash staying in URL
-      }, 400); // 0.4s delay works well
-    } else if (window.location.hash === "#" || window.location.hash === "#/") {
+    const hash = window.location.hash;
+
+    if (hash.includes("access_token")) {
+      // Parse tokens from hash
+      const params = new URLSearchParams(hash.slice(1)); // remove the #
+      const access_token = params.get("access_token");
+      const refresh_token = params.get("refresh_token");
+
+      // Set the Supabase session manually
+      supabase.auth.setSession({ access_token, refresh_token }).then(() => {
+        window.location.hash = ""; // clean the URL
+        window.location.replace("/focus"); // redirect after session is set
+      });
+    } else if (hash === "#" || hash === "#/") {
       window.location.replace("/focus");
     }
   }, []);
