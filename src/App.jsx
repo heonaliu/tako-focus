@@ -112,8 +112,13 @@ export default function App() {
           });
           if (error) console.error("Error parsing session from URL:", error);
 
-          // Clean the URL hash so it’s nice
-          window.history.replaceState({}, document.title, "/focus");
+          // Only redirect if a session exists (i.e., user is logged in)
+          if (data?.session) {
+            window.history.replaceState({}, document.title, "/focus");
+          } else {
+            // Clear hash without redirecting
+            window.history.replaceState({}, document.title, "/");
+          }
         } catch (err) {
           console.error(err);
         }
@@ -121,7 +126,13 @@ export default function App() {
         window.location.hash === "#" ||
         window.location.hash === "#/"
       ) {
-        window.history.replaceState({}, document.title, "/focus");
+        // Only redirect to /focus if user is actually logged in
+        const { data } = await supabase.auth.getSession();
+        if (data?.session) {
+          window.history.replaceState({}, document.title, "/focus");
+        } else {
+          window.history.replaceState({}, document.title, "/");
+        }
       }
     };
 

@@ -9,6 +9,7 @@ export default function Navbar({ user }) {
 
   async function signOut() {
     await supabase.auth.signOut();
+    setUser(null);
     navigate("/");
   }
 
