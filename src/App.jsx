@@ -7,7 +7,7 @@ import takoIdle from "./assets/tako_idle.png";
 import Navbar from "./components/Navbar";
 import LoginPage from "./pages/LoginPage";
 import Login from "./pages/Login";
-import Dashboard from "./pages/Dashboard";
+//import Dashboard from "./pages/Dashboard";
 import FocusSession from "./pages/FocusSession";
 import Tasks from "./pages/Tasks";
 import About from "./pages/About";
@@ -106,17 +106,17 @@ export default function App() {
     if (window.location.hash.includes("access_token")) {
       // wait a tiny bit to let supabase finish setting the session
       setTimeout(() => {
-        window.location.replace("/dashboard"); // use replace to avoid hash staying in URL
+        window.location.replace("/focus"); // use replace to avoid hash staying in URL
       }, 400); // 0.4s delay works well
     } else if (window.location.hash === "#" || window.location.hash === "#/") {
-      window.location.replace("/dashboard");
+      window.location.replace("/focus");
     }
   }, []);
 
   // ⏳ Smooth loading transition between pages
   useEffect(() => {
     setIsLoading(true);
-    const timer = setTimeout(() => setIsLoading(false), 600); // fade duration
+    const timer = setTimeout(() => setIsLoading(false), 500); // fade duration
     return () => clearTimeout(timer);
   }, [location]);
 
