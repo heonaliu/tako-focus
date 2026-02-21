@@ -169,7 +169,6 @@ export default function App() {
               <Route path="/about" element={<About />} />
               <Route path="/login" element={<LoginPage />} />
 
-              {/* Protected routes */}
               {/* <Route
                 path="/dashboard"
                 element={
@@ -195,8 +194,7 @@ export default function App() {
                 }
               />
 
-              {/* Catch-all */}
-              <Route path="*" element={<Navigate to="/dashboard" replace />} />
+              <Route path="*" element={<Navigate to="/focus" replace />} />
             </Routes>
           </motion.div>
         )}
