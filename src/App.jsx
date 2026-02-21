@@ -154,14 +154,14 @@ export default function App() {
                   </ProtectedRoute>
                 }
               />
-              <Route
+              {/* <Route
                 path="/tasks"
                 element={
                   <ProtectedRoute user={user}>
                     <Tasks user={user} />
                   </ProtectedRoute>
                 }
-              />
+              /> */}
               <Route
                 path="/focus"
                 element={
