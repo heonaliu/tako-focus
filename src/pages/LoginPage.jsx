@@ -10,9 +10,8 @@ export default function LoginPage() {
 
   // Upsert profile safely after login
   useEffect(() => {
-  if (user) navigate("/dashboard");
-}, [user, navigate]);
-
+    if (user) navigate("/focus");
+  }, [user, navigate]);
 
   // Trigger Google OAuth login
   const handleGoogleSignIn = async () => {
@@ -44,7 +43,11 @@ export default function LoginPage() {
       <div className="auth-box">
         <h2>Welcome to TakoFocus!</h2>
 
-        {error && <p className="error" style={{ color: "red" }}>{error}</p>}
+        {error && (
+          <p className="error" style={{ color: "red" }}>
+            {error}
+          </p>
+        )}
 
         <button
           onClick={handleGoogleSignIn}

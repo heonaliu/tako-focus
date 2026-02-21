@@ -138,22 +138,20 @@ export default function App() {
             <Routes location={location} key={location.pathname}>
               <Route
                 path="/"
-                element={
-                  user ? <Navigate to="/dashboard" replace /> : <Login />
-                }
+                element={user ? <Navigate to="/focus" replace /> : <Login />}
               />
               <Route path="/about" element={<About />} />
               <Route path="/login" element={<LoginPage />} />
 
               {/* Protected routes */}
-              <Route
+              {/* <Route
                 path="/dashboard"
                 element={
                   <ProtectedRoute user={user}>
                     <Dashboard user={user} />
                   </ProtectedRoute>
                 }
-              />
+              /> */}
               {/* <Route
                 path="/tasks"
                 element={
