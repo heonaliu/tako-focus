@@ -103,22 +103,29 @@ export default function App() {
 
   // 🧭 After Supabase OAuth redirect
   useEffect(() => {
-    const hash = window.location.hash;
+    const handleAuthHash = async () => {
+      if (window.location.hash.includes("access_token")) {
+        try {
+          // Process the hash so Supabase sets the session
+          const { data, error } = await supabase.auth.getSessionFromUrl({
+            storeSession: true,
+          });
+          if (error) console.error("Error parsing session from URL:", error);
 
-    if (hash.includes("access_token")) {
-      // Parse tokens from hash
-      const params = new URLSearchParams(hash.slice(1)); // remove the #
-      const access_token = params.get("access_token");
-      const refresh_token = params.get("refresh_token");
+          // Clean the URL hash so it’s nice
+          window.history.replaceState({}, document.title, "/focus");
+        } catch (err) {
+          console.error(err);
+        }
+      } else if (
+        window.location.hash === "#" ||
+        window.location.hash === "#/"
+      ) {
+        window.history.replaceState({}, document.title, "/focus");
+      }
+    };
 
-      // Set the Supabase session manually
-      supabase.auth.setSession({ access_token, refresh_token }).then(() => {
-        window.location.hash = ""; // clean the URL
-        window.location.replace("/focus"); // redirect after session is set
-      });
-    } else if (hash === "#" || hash === "#/") {
-      window.location.replace("/focus");
-    }
+    handleAuthHash();
   }, []);
 
   // ⏳ Smooth loading transition between pages
