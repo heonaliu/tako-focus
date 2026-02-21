@@ -9,9 +9,9 @@ export default function About() {
         <img src={takoTired} alt="Tako Tired" className="about-img" />
         <h1 className="about-title">About TakoFocus</h1>
         <p className="about-text">
-          TakoFocus is a simple, fun productivity app that is a Pomodoro-style
-          focus timer — designed to conquer procrastination once and for all
-          while helping you stay organized and motivated.
+          TakoFocus is a simple, fun productivity web app that is a
+          Pomodoro-style focus timer — designed to conquer procrastination once
+          and for all while helping you stay organized and motivated.
         </p>
         <br />
         <br />
