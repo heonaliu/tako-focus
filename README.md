@@ -1,6 +1,8 @@
+Feb 20 UPDATE: Decided to keep this web app simple with just a pomodoro timer and remove the task feature because the Supabase database had several issues
+
 # 🐙 TakoFocus
 
-TakoFocus is a minimalist, AI-powered study and productivity web app designed to help users conquer procrastination through focused sessions, smart task planning, and adorable motivation from Tako the octopus 🐙.
+TakoFocus is a minimalist, productivity web app designed to help users conquer procrastination through focused sessions, smart task planning, and adorable motivation from Tako the octopus 🐙.
 
 ---
 
