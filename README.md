@@ -1,4 +1,4 @@
-Feb 20 UPDATE: Decided to keep this web app simple with just a pomodoro timer and remove the task feature because the Supabase database had several issues
+Feb 20, 2026 UPDATE: Decided to keep this web app simple with just a pomodoro timer and remove the task feature because the Supabase database had several issues
 
 # 🐙 TakoFocus
 
